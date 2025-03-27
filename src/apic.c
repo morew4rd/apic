@@ -1,4 +1,25 @@
 #include "apic.h"
+#include <string.h>
+
+int enum_str_to_int(const Enum* en, const char* str) {
+    if (!en || !str) return -1;
+    for (size_t i = 0; i < en->fields_count; i++) {
+        if (strcmp(str, en->fields[i].str_value) == 0) {
+            return en->fields[i].value;
+        }
+    }
+    return -1; // Not found
+}
+
+const char* enum_int_to_str(const Enum* en, int value) {
+    if (!en) return NULL;
+    for (size_t i = 0; i < en->fields_count; i++) {
+        if (en->fields[i].value == value) {
+            return en->fields[i].str_value;
+        }
+    }
+    return NULL; // Not found
+}
 
 // // --- Forward Declarations for Type Resolution Helpers ---
 // const ArrayType* find_array_type(const Module* mod, const char* name);
@@ -296,242 +317,189 @@ void generate_c_header(const Module* mod) {
     printf("\n#endif // %s_H\n", mod->name);
 }
 
-// --- Lua Binding Generation Helpers ---
-const char* map_type_to_lua(const Module* mod, const char* type_name) {
-    // Check for enum first
+static const char* map_type_to_lua(const Module* mod, const char* type_name) {
     if (find_enum(mod, type_name)) return "enum";
-
-    // Primitive types
-    if (strcmp(type_name, INT32) == 0) return "integer";
-    if (strcmp(type_name, INT64) == 0) return "integer";
-    if (strcmp(type_name, FLOAT) == 0) return "number";
-    if (strcmp(type_name, DOUBLE) == 0) return "number";
-    if (strcmp(type_name, ISIZE) == 0) return "integer";
-    if (strcmp(type_name, USIZE) == 0) return "integer";
-    if (strcmp(type_name, BYTE) == 0) return "integer";
+    if (strcmp(type_name, FLOAT) == 0 || strcmp(type_name, DOUBLE) == 0) return "number";
+    if (strcmp(type_name, INT32) == 0 || strcmp(type_name, INT64) == 0) return "integer";
     if (strcmp(type_name, STRING) == 0) return "string";
-    if (strcmp(type_name, VOID) == 0) return "none";
+    return type_name; // userdata
+}
 
-    // Check for other complex types
-    if (find_record(mod, type_name)) return "userdata";
-    if (find_variant(mod, type_name)) return "userdata";
-    return "userdata";
+
+
+// Define the hash function as a macro for consistency
+#define HASH_FUNCTION(str) \
+    do { \
+        unsigned int hash = 5381; \
+        int c; \
+        while ((c = *str++)) { \
+            hash = ((hash << 5) + hash) + c; /* hash * 33 + c */ \
+        } \
+        return hash; \
+    } while (0)
+
+// Compute hash using the macro for precomputing enum string hashes
+static unsigned int compute_hash(const char* str) {
+    HASH_FUNCTION(str);
+}
+
+// Print a string with proper escaping for C string literals
+static void print_escaped_string(const char* str) {
+    while (*str) {
+        switch (*str) {
+            case '\\': printf("\\\\"); break;
+            case '"': printf("\\\""); break;
+            case '\n': printf("\\n"); break;
+            case '\r': printf("\\r"); break;
+            case '\t': printf("\\t"); break;
+            default: putchar(*str); break;
+        }
+        str++;
+    }
 }
 
 void generate_lua_bindings(const Module* mod) {
-    printf("// Lua 5.1 Bindings for %s\n", mod->name);
-    printf("#include <string.h>\n");
-    printf("#include <lua.h>\n#include <lauxlib.h>\n#include <lualib.h>\n\n");
+    // Include necessary headers
+    printf("#include <lua.h>\n");
+    printf("#include <lauxlib.h>\n");
+    printf("#include <string.h>\n\n");
 
-    // Generate forward declarations for wrapper functions
-    for (size_t i = 0; i < mod->functions_count; i++) {
-        const Function* func = mod->functions[i];
-        printf("static int lua_%s(lua_State *L);\n", func->name);
-    }
+    // Define the EnumEntry struct
+    printf("typedef struct {\n");
+    printf("    int value;\n");
+    printf("    const char* str;\n");
+    printf("    unsigned int hash;\n");
+    printf("} EnumEntry;\n\n");
 
-    // Generate constructor functions for records
-    for (size_t i = 0; i < mod->records_count; i++) {
-        const Record* rec = mod->records[i];
-        printf("static int lua_create_%s(lua_State *L);\n", rec->name);
-    }
-
-    printf("\n// Metatable registration\n");
-    printf("static void register_metatables(lua_State *L) {\n");
-
-    // Register records
-    for (size_t i = 0; i < mod->records_count; i++) {
-        printf("    // Metatable for %s\n", mod->records[i]->name);
-        printf("    luaL_newmetatable(L, \"%s\");\n", mod->records[i]->name);
-        printf("    lua_pop(L, 1);\n\n");
-    }
-
-    // Register variants
-    for (size_t i = 0; i < mod->variants_count; i++) {
-        printf("    // Metatable for %s\n", mod->variants[i]->name);
-        printf("    luaL_newmetatable(L, \"%s\");\n", mod->variants[i]->name);
-        printf("    lua_pop(L, 1);\n\n");
-    }
-
+    // Generate the compute_hash function
+    printf("static unsigned int compute_hash(const char* str) {\n");
+    printf("    unsigned int hash = 5381;\n");
+    printf("    int c;\n");
+    printf("    while ((c = *str++)) {\n");
+    printf("        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */\n");
+    printf("    }\n");
+    printf("    return hash;\n");
     printf("}\n\n");
 
-    // Generate constructor implementations
+    // Generate code for each enum
+    for (size_t i = 0; i < mod->enums_count; i++) {
+        const Enum* en = mod->enums[i];
+
+        // Generate the enum entries array
+        printf("static const EnumEntry enum_%s_entries[] = {\n", en->name);
+        for (size_t j = 0; j < en->fields_count; j++) {
+            const EnumField* ef = &en->fields[j];
+            unsigned int hash = compute_hash(ef->str_value); // Precompute hash during generation
+            printf("    { %d, \"", ef->value);
+            print_escaped_string(ef->str_value);
+            printf("\", %u }%s\n", hash, j < en->fields_count - 1 ? "," : "");
+        }
+        printf("};\n\n");
+
+        // Generate the str_to_int function
+        printf("static int enum_%s_str_to_int(const char* str) {\n", en->name);
+        printf("    unsigned int h = compute_hash(str);\n");
+        printf("    for (size_t i = 0; i < sizeof(enum_%s_entries)/sizeof(EnumEntry); i++) {\n", en->name);
+        printf("        if (enum_%s_entries[i].hash == h && strcmp(str, enum_%s_entries[i].str) == 0) {\n", en->name, en->name);
+        printf("            return enum_%s_entries[i].value;\n", en->name);
+        printf("        }\n");
+        printf("    }\n");
+        printf("    return -1; // Return -1 for invalid string\n");
+        printf("}\n\n");
+    }
+
+    // Generate record constructors
     for (size_t i = 0; i < mod->records_count; i++) {
         const Record* rec = mod->records[i];
-        printf("static int lua_create_%s(lua_State *L) {\n", rec->name);
-        printf("    // Create new %s object\n", rec->name);
-        printf("    %s* obj = (%s*)lua_newuserdata(L, sizeof(%s));\n",
-              rec->name, rec->name, rec->name);
+        printf("static int l_new_%s(lua_State* L) {\n", rec->name);
+        printf("    %s* obj = (%s*)lua_newuserdata(L, sizeof(%s));\n", rec->name, rec->name, rec->name);
         printf("    luaL_getmetatable(L, \"%s\");\n", rec->name);
-        printf("    lua_setmetatable(L, -2);\n\n");
-
-        // Initialize fields from Lua stack
+        printf("    lua_setmetatable(L, -2);\n");
         for (size_t j = 0; j < rec->fields_count; j++) {
             const Field* f = &rec->fields[j];
-            printf("    // %s: %s\n", f->name, f->doc ? f->doc : "");
-            printf("    obj->%s = ", f->name);
-
-            if (strcmp(f->type, FLOAT) == 0 || strcmp(f->type, DOUBLE) == 0) {
-                printf("luaL_checknumber(L, %zu);\n", j+1);
-            }
-            else if (strcmp(f->type, INT32) == 0 || strcmp(f->type, INT64) == 0) {
-                printf("luaL_checkinteger(L, %zu);\n", j+1);
-            }
-            else if (strcmp(f->type, STRING) == 0) {
-                printf("luaL_checkstring(L, %zu);\n", j+1);
-            }
-            else {
-                printf("*(%s*)luaL_checkudata(L, %zu, \"%s\");\n",
-                      f->type, j+1, f->type);
+            if (find_enum(mod, f->type)) {
+                printf("    const char* %s_str = luaL_checkstring(L, %zu);\n", f->name, j + 1);
+                printf("    int %s_int = enum_%s_str_to_int(%s_str);\n", f->name, f->type, f->name);
+                printf("    if (%s_int == -1) {\n", f->name);
+                printf("        return luaL_error(L, \"Invalid %s value: %%s\", %s_str);\n", f->type, f->name);
+                printf("    }\n");
+                printf("    obj->%s = %s_int;\n", f->name, f->name);
+            } else {
+                printf("    obj->%s = luaL_checkinteger(L, %zu);\n", f->name, j + 1);
             }
         }
-
         printf("    return 1;\n");
         printf("}\n\n");
     }
 
-    // Generate wrapper implementations
+    // Generate function wrappers
     for (size_t i = 0; i < mod->functions_count; i++) {
-        const Function* func = mod->functions[i];
-        printf("static int lua_%s(lua_State *L) {\n", func->name);
+        const Function* fn = mod->functions[i];
+        // Generate the wrapper function signature
+        printf("static int l_%s(lua_State* L) {\n", fn->name);
 
-        // Argument checking
-        printf("    // %s: %s\n", func->name, func->doc ? func->doc : "");
-        printf("    if (lua_gettop(L) != %zu) {\n", func->inputs_count);
-        printf("        return luaL_error(L, \"%s expects %zu arguments\");\n    }\n\n",
-              func->name, func->inputs_count);
-
-        // Input processing
-        for (size_t j = 0; j < func->inputs_count; j++) {
-            const Arg* arg = &func->inputs[j];
-            const Enum* en = find_enum(mod, arg->type);
-
-            printf("    // %s: %s\n", arg->name, arg->doc ? arg->doc : "");
-
-            if (en) {
-                // Enum string handling
-                printf("    const char* %s_str = luaL_checkstring(L, %zu);\n", arg->name, j+1);
-                printf("    int %s;\n", arg->name);
-
-                // Generate string comparisons
-                for (size_t k = 0; k < en->fields_count; k++) {
-                    const EnumField* ef = &en->fields[k];
-                    const char* cmp = (k == 0) ? "if" : "else if";
-                    printf("    %s (strcmp(%s_str, \"%s\") == 0) {\n", cmp, arg->name, ef->str_value);
-                    printf("        %s = %d;\n", arg->name, ef->value);
-                    printf("    }\n");
-                }
-                printf("    else {\n");
-                printf("        return luaL_error(L, \"Invalid %s value: %%s\", %s_str);\n", en->name, arg->name);
-                printf("    }\n");
-            }
-            else if (strcmp(arg->type, INT32) == 0 || strcmp(arg->type, INT64) == 0) {
-                printf("    lua_Integer %s = luaL_checkinteger(L, %zu);\n", arg->name, j+1);
-            }
-            else if (strcmp(arg->type, FLOAT) == 0 || strcmp(arg->type, DOUBLE) == 0) {
-                printf("    lua_Number %s = luaL_checknumber(L, %zu);\n", arg->name, j+1);
-            }
-            else if (strcmp(arg->type, STRING) == 0) {
-                printf("    const char* %s = luaL_checkstring(L, %zu);\n", arg->name, j+1);
-            }
-            else {
-                printf("    %s* %s = (%s*)luaL_checkudata(L, %zu, \"%s\");\n",
-                      arg->type, arg->name, arg->type, j+1, arg->type);
-            }
+        // Get input arguments from Lua (simplified for this example)
+        for (size_t j = 0; j < fn->inputs_count; j++) {
+            const Arg* arg = &fn->inputs[j];
+            printf("    int %s = luaL_checkinteger(L, %zu);\n", arg->name, j + 1);
         }
-        printf("\n");
 
-        // Function call
-        const Enum* return_enum = find_enum(mod, func->output->type);
-        if (strcmp(func->output->type, VOID) != 0) {
-            printf("    %s result = %s(",
-                  map_type_to_c(mod, func->output->type),
-                  func->name);
+        // Call the function with the correct return type
+        const char* return_type = fn->output ? fn->output->type : "void";
+        if (strcmp(return_type, "void") != 0) {
+            printf("    %s result = %s(", map_type_to_c(mod, return_type), fn->name);
         } else {
-            printf("    %s(", func->name);
+            printf("    %s(", fn->name);
         }
-
-        for (size_t j = 0; j < func->inputs_count; j++) {
-            const Arg* arg = &func->inputs[j];
-            printf("%s%s", arg->name, j < func->inputs_count-1 ? ", " : "");
+        // Pass arguments
+        for (size_t j = 0; j < fn->inputs_count; j++) {
+            if (j > 0) printf(", ");
+            printf("%s", fn->inputs[j].name);
         }
-        printf(");\n\n");
+        printf(");\n");
 
-        // Return handling
-        if (strcmp(func->output->type, VOID) != 0) {
-            printf("    // Return: %s\n", func->output->doc ? func->output->doc : "");
-
-            if (return_enum) {
-                // Convert enum to string
-                printf("    const char* result_str = \"\";\n");
-                printf("    switch(result) {\n");
-                for (size_t k = 0; k < return_enum->fields_count; k++) {
-                    const EnumField* ef = &return_enum->fields[k];
-                    printf("        case %d: result_str = \"%s\"; break;\n",
-                          ef->value, ef->str_value);
-                }
-                printf("        default: return luaL_error(L, \"Invalid %s value\");\n", return_enum->name);
-                printf("    }\n");
-                printf("    lua_pushstring(L, result_str);\n");
-            }
-            else if (strcmp(func->output->type, INT32) == 0 ||
-                    strcmp(func->output->type, INT64) == 0) {
-                printf("    lua_pushinteger(L, result);\n");
-            }
-            else if (strcmp(func->output->type, FLOAT) == 0 ||
-                    strcmp(func->output->type, DOUBLE) == 0) {
-                printf("    lua_pushnumber(L, result);\n");
-            }
-            else if (strcmp(func->output->type, STRING) == 0) {
-                printf("    lua_pushstring(L, result);\n");
-            }
-            else {
-                printf("    // Push userdata\n");
-                printf("    %s* result_ptr = (%s*)lua_newuserdata(L, sizeof(%s));\n",
-                      func->output->type, func->output->type, func->output->type);
-                printf("    *result_ptr = result;\n");
-                printf("    luaL_getmetatable(L, \"%s\");\n", func->output->type);
+        // Handle the return value
+        if (strcmp(return_type, "void") != 0) {
+            if (find_record(mod, return_type)) {
+                // Struct return type (e.g., Vec2)
+                printf("    %s* ud = (%s*)lua_newuserdata(L, sizeof(%s));\n",
+                       return_type, return_type, return_type);
+                printf("    *ud = result;\n");
+                printf("    luaL_getmetatable(L, \"%s\");\n", return_type);
                 printf("    lua_setmetatable(L, -2);\n");
+            } else if (strcmp(return_type, "int") == 0) {
+                printf("    lua_pushinteger(L, result);\n");
+            } else if (strcmp(return_type, "float") == 0 || strcmp(return_type, "double") == 0) {
+                printf("    lua_pushnumber(L, result);\n");
+            } else if (strcmp(return_type, "string") == 0) {
+                printf("    lua_pushstring(L, result);\n");
+            } else {
+                printf("    // Unsupported return type: %s\n", return_type);
             }
             printf("    return 1;\n");
         } else {
             printf("    return 0;\n");
         }
-
         printf("}\n\n");
     }
 
-    // Module registration
-    printf("int luaopen_%s(lua_State *L) {\n", mod->name);
-    printf("    register_metatables(L);\n\n");
+    // Generate the Lua module initialization function
+    printf("int luaopen_%s(lua_State* L) {\n", mod->name);
     printf("    static const luaL_Reg funcs[] = {\n");
-
-    // Add constructor functions
-    for (size_t i = 0; i < mod->records_count; i++) {
-        printf("        {\"create_%s\", lua_create_%s},\n",
-              mod->records[i]->name, mod->records[i]->name);
-    }
-
-    // Add regular functions
     for (size_t i = 0; i < mod->functions_count; i++) {
-        const Function* func = mod->functions[i];
-        printf("        {\"%s\", lua_%s},\n", func->name, func->name);
+        printf("        {\"%s\", l_%s},\n", mod->functions[i]->name, mod->functions[i]->name);
     }
-
+    for (size_t i = 0; i < mod->records_count; i++) {
+        printf("        {\"new_%s\", l_new_%s},\n", mod->records[i]->name, mod->records[i]->name);
+    }
     printf("        {NULL, NULL}\n");
-    printf("    };\n\n");
-
-    // Add enum values
-    for (size_t i = 0; i < mod->enums_count; i++) {
-        const Enum* en = mod->enums[i];
-        printf("    // %s enum values\n", en->name);
-        for (size_t j = 0; j < en->fields_count; j++) {
-            const EnumField* ef = &en->fields[j];
-            printf("    lua_pushstring(L, \"%s\");\n", ef->str_value);
-            printf("    lua_setfield(L, -2, \"%s\");\n", ef->name);
-        }
-        printf("\n");
-    }
-
+    printf("    };\n");
     printf("    luaL_register(L, \"%s\", funcs);\n", mod->name);
-    printf("    return 1;\n}\n");
+    // Register metatables for records
+    for (size_t i = 0; i < mod->records_count; i++) {
+        printf("    luaL_newmetatable(L, \"%s\");\n", mod->records[i]->name);
+        printf("    lua_pop(L, 1);\n");
+    }
+    printf("    return 1;\n");
+    printf("}\n");
 }

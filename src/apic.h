@@ -196,7 +196,8 @@ typedef struct Module {
     }
 
 // functions
-
+int enum_str_to_int(const Enum* en, const char* str);
+const char* enum_int_to_str(const Enum* en, int value);
 void pretty_print_module(const Module* mod);
 void generate_c_header(const Module* mod);
 void generate_lua_bindings(const Module* mod);
