@@ -1,17 +1,17 @@
 # APIC
 
+**THIS IS WIP. DON'T USE YET **
+
 ## Overview
 
-**THIS IS WIP**
+API definition DSL in C.
 
-API definition language in C.
+Use a basicly defined API structure. By default it can be used
+as a replacement for a header file.
 
-Define your API with C macros and generate:
-- C headers
-- Lua bindings
-- Documentation
-- (ANd possibly more)
+It can also be used for compile time reflection for types defined with this DSL.
 
 ## Example
 
 See `./test` directory.
+

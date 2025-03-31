@@ -1,205 +1,207 @@
 #ifndef APIC_H
 #define APIC_H
 
-
-#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
-// --- Primitive Types ---
-#define INT32    "int32"
-#define INT64    "int64"
-#define FLOAT    "float"
-#define DOUBLE   "double"
-#define ISIZE    "isize"
-#define USIZE    "usize"
-#define BYTE     "byte"
-#define STRING   "string"
-#define VOID     "void"
 
-// --- Core Structures ---
-typedef struct Field {
-    const char *name;
-    const char *type;
-    const char *doc;
-} Field;
-
-typedef struct Choice {
-    const char *name;
-    const char *type;
-    const char *doc;
-} Choice;
-
-typedef struct Record {
-    const char *name;
-    const char *doc;
-    const Field *fields;
-    size_t fields_count;
-} Record;
-
-typedef struct Variant {
-    const char *name;
-    const char *doc;
-    const Choice *choices;
-    size_t choices_count;
-} Variant;
-
-typedef struct ArrayType {
-    const char *name;
-    const char *item_type;
-    size_t size;
-    const char *doc;
-} ArrayType;
-
-typedef struct PtrType {
-    const char *name;
-    const char *pointee_type;
-    const char *doc;
-} PtrType;
-
-typedef struct Arg {
-    const char *name;
-    const char *type;
-    const char *doc;
-} Arg;
-
-typedef struct Ret {
-    const char *type;
-    const char *doc;
-} Ret;
-
-typedef struct Function {
-    const char *name;
-    const char *doc;
-    const Arg *inputs;
-    size_t inputs_count;
-    const Ret *output;
-} Function;
-
-typedef struct EnumField {
-    const char *name;
-    int value;
-    const char *str_value;
-    const char *doc;
-} EnumField;
-
-typedef struct Enum {
-    const char *name;
-    const char *doc;
-    const EnumField *fields;
-    size_t fields_count;
-} Enum;
-
+#ifdef APIC_REFLECT
+/* ----------------- Reflection Mode ---------------- */
+typedef struct Field { const char *name, *type, *doc; } Field;
+typedef struct Var { const char *kind; const char *name, *type, *doc; } Var;
+typedef struct Typedef { const char *kind; const char *name, *type, *doc; } Typedef;
+typedef struct Struct { const char *kind; const char *name, *doc; Field *fields; int count; } Struct;
+typedef struct Union { const char *kind; const char *name, *doc; Field *fields; int count; } Union;
+typedef struct Arg { const char *name, *type, *doc; } Arg;
+typedef struct Func { const char *kind; const char *name, *doc; const char *ret; Arg *args; int count; } Func;
+typedef struct Lambda { const char *kind; const char *name, *doc; const char *ret; Arg *args; int count; } Lambda;
+typedef struct EnumEntry { const char *name; int value; const char *str, *doc; } EnumEntry;
+typedef struct Enum { const char *name, *doc; EnumEntry *entries; int count; } Enum;
 typedef struct Module {
-    const char *name;
-    const char *doc;
-    const Record * const *records;
-    const Variant * const *variants;
-    const ArrayType * const *arrays;
-    const PtrType * const *ptrs;
-    const Function * const *functions;
-    const Enum * const *enums;
-    size_t records_count;
-    size_t variants_count;
-    size_t arrays_count;
-    size_t ptrs_count;
-    size_t functions_count;
-    size_t enums_count;
+    const char *name, *doc;
+    Struct **structs;
+    Union **unions;
+    Func **funcs;
+    Lambda **lambdas;
+    Enum **enums;
+    Var **vars;
+    Typedef **typedefs;
+    int struct_count;
+    int union_count;
+    int func_count;
+    int lambda_count;
+    int enum_count;
+    int var_count;
+    int typedef_count;
 } Module;
 
+/* ----------------- Field Macros ----------------- */
+#define F_(n,t,d) {#n, #t, d}
+#define F(n,t) F_(n,t, "")
+#define FA_(n,t,c,d) {#n, #t "[" #c "]", d}
+#define FA(n,t,c) FA_(n,t,c, "")
 
-// --- Macros ---
-#define CHOICE(NAME, TYPE, DOC_STR) \
-    (Choice){.name=#NAME, .type=(TYPE), .doc=(DOC_STR)}
+/* ---------------- Variable Macros ---------------- */
+#define VAR_(n,t,d) static Var n = {"var", #n, #t, d}
+#define VAR(n,t) VAR_(n,t, "")
 
-#define RET(TYPE, DOC_STR) \
-    (Ret){.type=(TYPE), .doc=(DOC_STR)}
+/* ---------------- Typedef Macros ---------------- */
+#define TDEF_(n,t,d) static Typedef n = {"typedef", #n, #t, d}
+#define TDEF(n,t) TDEF_(n,t, "")
 
-#define VOIDRET RET(VOID, NODOC)
+/* ---------------- Argument Macros --------------- */
+#define A_(n,t,d) {#n, #t, d}
+#define A(n,t) A_(n,t, "")
 
-#define DOC(str) str
+/* ---------------- Enum Value Macros -------------- */
+#define N_(n,v,s,d) {#n, v, s, d}
+#define N(n,v,s) N_(n,v,s, "")
 
-#define NODOC NULL
+/* ------------------ Struct Macros ----------------- */
+#define STRUCT_(name, docstr, ...) \
+    static Field name##_fields[] = {__VA_ARGS__}; \
+    Struct name = {"struct", #name, docstr, name##_fields, sizeof(name##_fields)/sizeof(Field)}
+#define STRUCT(name, ...) STRUCT_(name, "", __VA_ARGS__)
 
-#define RECORD(NAME, DOC_STR, ...) \
-    static const Record NAME = (Record){ \
-        .name=#NAME, .doc=(DOC_STR), \
-        .fields=(Field[]){__VA_ARGS__}, \
-        .fields_count=sizeof((Field[]){__VA_ARGS__})/sizeof(Field) \
-    }
+/* ------------------ Union Macros ------------------ */
+#define UNION_(name, docstr, ...) \
+    static Field name##_fields[] = {__VA_ARGS__}; \
+    Union name = {"union", #name, docstr, name##_fields, sizeof(name##_fields)/sizeof(Field)}
+#define UNION(name, ...) UNION_(name, "", __VA_ARGS__)
 
-#define VARIANT(NAME, DOC_STR, ...) \
-    static const Variant NAME = (Variant){ \
-        .name=#NAME, .doc=(DOC_STR), \
-        .choices=(Choice[]){__VA_ARGS__}, \
-        .choices_count=sizeof((Choice[]){__VA_ARGS__})/sizeof(Choice) \
-    }
+/* ---------------- Function Macros ---------------- */
+#define FUNC_(name, docstr, ret, ...) \
+    static Arg name##_args[] = {__VA_ARGS__}; \
+    Func name = {"function", #name, docstr, #ret, name##_args, sizeof(name##_args)/sizeof(Arg)}
+#define FUNC(name, ret, ...) FUNC_(name, "", ret, __VA_ARGS__)
 
-#define ARRAY_TYPE(NAME, ITEM_TYPE, SIZE, DOC_STR) \
-    static const ArrayType NAME = (ArrayType){.name=(#NAME), .item_type=(ITEM_TYPE), .size=(SIZE), .doc=(DOC_STR)}
+/* ----------------- Lambda Macros ----------------- */
+#define LAMBDA_(name, docstr, ret, ...) \
+    static Arg name##_args[] = {__VA_ARGS__}; \
+    Lambda name = {"lambda", #name, docstr, #ret, name##_args, sizeof(name##_args)/sizeof(Arg)}
+#define LAMBDA(name, ret, ...) LAMBDA_(name, "", ret, __VA_ARGS__)
 
-#define PTR_TYPE(NAME, POINTEE_TYPE, DOC_STR) \
-    static const PtrType NAME = (PtrType){.name=(#NAME), .pointee_type=(POINTEE_TYPE), .doc=(DOC_STR)}
+/* ------------------ Enum Macros ------------------ */
+#define ENUM_(name, docstr, ...) \
+    static EnumEntry name##_entries[] = {__VA_ARGS__}; \
+    Enum name = {#name, docstr, name##_entries, sizeof(name##_entries)/sizeof(EnumEntry)}
+#define ENUM(name, ...) ENUM_(name, "", __VA_ARGS__)
 
-#define FIELD(NAME, TYPE, DOC_STR) \
-    (Field){.name=#NAME, .type=(TYPE), .doc=(DOC_STR)}
+/* --------------- Pointer Helpers --------------- */
+#define PTR(TYPE) TYPE*
 
-#define ARG(NAME, TYPE, DOC_STR) \
-    (Arg){.name=#NAME, .type=(TYPE), .doc=(DOC_STR)}
+/* --------------- Module Macros --------------- */
+#define STRUCTS(...) .structs = (Struct*[]){__VA_ARGS__}, .struct_count = sizeof((Struct*[]){__VA_ARGS__})/sizeof(Struct*)
+#define UNIONS(...) .unions = (Union*[]){__VA_ARGS__}, .union_count = sizeof((Union*[]){__VA_ARGS__})/sizeof(Union*)
+#define FUNCS(...) .funcs = (Func*[]){__VA_ARGS__}, .func_count = sizeof((Func*[]){__VA_ARGS__})/sizeof(Func*)
+#define LAMBDAS(...) .lambdas = (Lambda*[]){__VA_ARGS__}, .lambda_count = sizeof((Lambda*[]){__VA_ARGS__})/sizeof(Lambda*)
+#define ENUMS(...) .enums = (Enum*[]){__VA_ARGS__}, .enum_count = sizeof((Enum*[]){__VA_ARGS__})/sizeof(Enum*)
+#define VARS(...) .vars = (Var*[]){__VA_ARGS__}, .var_count = sizeof((Var*[]){__VA_ARGS__})/sizeof(Var*)
+#define TYPEDEFS(...) .typedefs = (Typedef*[]){__VA_ARGS__}, .typedef_count = sizeof((Typedef*[]){__VA_ARGS__})/sizeof(Typedef*)
 
-#define ENUM_FIELD(NAME, VAL, STR, DOC_STR) \
-    (EnumField){.name=#NAME, .value=(VAL), .str_value=(STR), .doc=(DOC_STR)}
+#define MODULE_(n, d, ...) Module n = {.name = #n, .doc = d, __VA_ARGS__}
+#define MODULE(n, ...) MODULE_(n, "", __VA_ARGS__)
 
-#define ENUM(NAME, DOC_STR, ...) \
-    static const Enum NAME = (Enum){ \
-        .name=#NAME, .doc=(DOC_STR), \
-        .fields=(EnumField[]){__VA_ARGS__}, \
-        .fields_count=sizeof((EnumField[]){__VA_ARGS__})/sizeof(EnumField) \
-    }
+#else // APIC_REFLECT
+/* ----------------- Header Mode ---------------- */
+// Argument counting (supports up to 32 arguments)
+#define COUNT_ARGS(...) COUNT_ARGS_IMPL(__VA_ARGS__,\
+    32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,\
+    15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)
+    #define COUNT_ARGS_IMPL(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,\
+    _11,_12,_13,_14,_15,_16,_17,_18,_19,_20,_21,_22,_23,_24,\
+    _25,_26,_27,_28,_29,_30,_31,_32,N,...) N
 
-#define FUNCTION(NAME, DOC_STR, RET, ...) \
-    static const Function NAME = (Function){ \
-        .name=#NAME, .doc=(DOC_STR), \
-        .inputs=(Arg[]){__VA_ARGS__}, \
-        .inputs_count=sizeof((Arg[]){__VA_ARGS__})/sizeof(Arg), \
-        .output = &(RET) \
-    }
+    // Helper for macro expansion
+    #define CONCAT(a,b) a##b
+    #define CONCAT_FIELDS_IMPL(N, ...) CONCAT(CONCAT_FIELDS_, N)(__VA_ARGS__)
+    #define CONCAT_FIELDS(...) CONCAT_FIELDS_IMPL(COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)
 
-#define MODULE_RECORDS(...) \
-    .records = (const Record*[]){__VA_ARGS__}, \
-    .records_count = sizeof((const Record*[]){__VA_ARGS__})/sizeof(const Record*)
+    // Field concatenators (up to 32 fields)
+    #define CONCAT_FIELDS_0()
+    #define CONCAT_FIELDS_1(a) a
+    #define CONCAT_FIELDS_2(a,b) a b
+    #define CONCAT_FIELDS_3(a,b,c) a b c
+    #define CONCAT_FIELDS_4(a,b,c,d) a b c d
+    #define CONCAT_FIELDS_5(a,b,c,d,e) a b c d e
+    #define CONCAT_FIELDS_6(a,b,c,d,e,f) a b c d e f
+    #define CONCAT_FIELDS_7(a,b,c,d,e,f,g) a b c d e f g
+    #define CONCAT_FIELDS_8(a,b,c,d,e,f,g,h) a b c d e f g h
+    #define CONCAT_FIELDS_9(a,b,c,d,e,f,g,h,i) a b c d e f g h i
+    #define CONCAT_FIELDS_10(a,b,c,d,e,f,g,h,i,j) a b c d e f g h i j
+    #define CONCAT_FIELDS_11(a,b,c,d,e,f,g,h,i,j,k) a b c d e f g h i j k
+    #define CONCAT_FIELDS_12(a,b,c,d,e,f,g,h,i,j,k,l) a b c d e f g h i j k l
+    #define CONCAT_FIELDS_13(a,b,c,d,e,f,g,h,i,j,k,l,m) a b c d e f g h i j k l m
+    #define CONCAT_FIELDS_14(a,b,c,d,e,f,g,h,i,j,k,l,m,n) a b c d e f g h i j k l m n
+    #define CONCAT_FIELDS_15(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o) a b c d e f g h i j k l m n o
+    #define CONCAT_FIELDS_16(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p) a b c d e f g h i j k l m n o p
+    #define CONCAT_FIELDS_17(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q) a b c d e f g h i j k l m n o p q
+    #define CONCAT_FIELDS_18(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r) a b c d e f g h i j k l m n o p q r
+    #define CONCAT_FIELDS_19(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s) a b c d e f g h i j k l m n o p q r s
+    #define CONCAT_FIELDS_20(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t) a b c d e f g h i j k l m n o p q r s t
+    #define CONCAT_FIELDS_21(a,...) a CONCAT_FIELDS_20(__VA_ARGS__)
+    #define CONCAT_FIELDS_22(a,...) a CONCAT_FIELDS_21(__VA_ARGS__)
+    #define CONCAT_FIELDS_23(a,...) a CONCAT_FIELDS_22(__VA_ARGS__)
+    #define CONCAT_FIELDS_24(a,...) a CONCAT_FIELDS_23(__VA_ARGS__)
+    #define CONCAT_FIELDS_25(a,...) a CONCAT_FIELDS_24(__VA_ARGS__)
+    #define CONCAT_FIELDS_26(a,...) a CONCAT_FIELDS_25(__VA_ARGS__)
+    #define CONCAT_FIELDS_27(a,...) a CONCAT_FIELDS_26(__VA_ARGS__)
+    #define CONCAT_FIELDS_28(a,...) a CONCAT_FIELDS_27(__VA_ARGS__)
+    #define CONCAT_FIELDS_29(a,...) a CONCAT_FIELDS_28(__VA_ARGS__)
+    #define CONCAT_FIELDS_30(a,...) a CONCAT_FIELDS_29(__VA_ARGS__)
+    #define CONCAT_FIELDS_31(a,...) a CONCAT_FIELDS_30(__VA_ARGS__)
+    #define CONCAT_FIELDS_32(a,...) a CONCAT_FIELDS_31(__VA_ARGS__)
 
-#define MODULE_VARIANTS(...) \
-    .variants = (const Variant*[]){__VA_ARGS__}, \
-    .variants_count = sizeof((const Variant*[]){__VA_ARGS__})/sizeof(const Variant*)
+// Definition macros (ignore docs)
+#define F_(name, type, doc) type name;
+#define F(name, type) F_(name, type, "")
+#define FA_(name, type, count, doc) type name[count];
+#define FA(name, type, count) FA_(name, type, count, "")
+#define VAR_(name, type, doc) type name;
+#define VAR(name, type) VAR_(name, type, "")
+#define TDEF_(name, type, doc) typedef type name;
+#define TDEF(name, type) TDEF_(name, type, "")
+#define A_(type, name, doc) type name
+#define A(type, name) A_(type, name, "")
+#define N_(n,v,s,doc) n = v
+#define N(n,v,s) N_(n,v,s,"")
 
-#define MODULE_ARRAYS(...) \
-    .arrays = (const ArrayType*[]){__VA_ARGS__}, \
-    .arrays_count = sizeof((const ArrayType*[]){__VA_ARGS__})/sizeof(const ArrayType*)
+/* --------------- Pointer Helpers --------------- */
+#define PTR(TYPE) TYPE*
 
-#define MODULE_PTRS(...) \
-    .ptrs = (const PtrType*[]){__VA_ARGS__}, \
-    .ptrs_count = sizeof((const PtrType*[]){__VA_ARGS__})/sizeof(const PtrType*)
+/* ------------------ Struct Macros ----------------- */
+#define STRUCT_(name, docstr, ...) \
+    typedef struct name { CONCAT_FIELDS(__VA_ARGS__) } name
+#define STRUCT(name, ...) STRUCT_(name, "", __VA_ARGS__)
 
-#define MODULE_FUNCTIONS(...) \
-    .functions = (const Function*[]){__VA_ARGS__}, \
-    .functions_count = sizeof((const Function*[]){__VA_ARGS__})/sizeof(const Function*)
+/* ------------------ Union Macros ------------------ */
+#define UNION_(name, docstr, ...) \
+    typedef union name { CONCAT_FIELDS(__VA_ARGS__) } name
+#define UNION(name, ...) UNION_(name, "", __VA_ARGS__)
 
-#define MODULE_ENUMS(...) \
-    .enums = (const Enum*[]){__VA_ARGS__}, \
-    .enums_count = sizeof((const Enum*[]){__VA_ARGS__})/sizeof(const Enum*)
+/* ---------------- Function Macros ---------------- */
+#define FUNC_(name, docstr, ret, ...) ret name(__VA_ARGS__)
+#define FUNC(name, ret, ...) FUNC_(name, "", ret, __VA_ARGS__)
 
-#define MODULE(NAME, DOC_STR, ...) \
-    static const Module NAME = (Module){ \
-        .name=#NAME, .doc=(DOC_STR), \
-        __VA_ARGS__ \
-    }
+/* ----------------- Lambda Macros ----------------- */
+#define LAMBDA_(name, docstr, ret, ...) typedef ret (*name)(__VA_ARGS__)
+#define LAMBDA(name, ret, ...) LAMBDA_(name, "", ret, __VA_ARGS__)
 
-// functions
-int enum_str_to_int(const Enum* en, const char* str);
-const char* enum_int_to_str(const Enum* en, int value);
-void pretty_print_module(const Module* mod);
-void generate_c_header(const Module* mod);
-void generate_lua_bindings(const Module* mod);
+/* ------------------ Enum Macros ------------------ */
+#define ENUM_(name, docstr, ...) typedef enum name { __VA_ARGS__ } name
+#define ENUM(name, ...) ENUM_(name, "", __VA_ARGS__)
+
+/* --------------- Module Macros --------------- */
+#define MODULE(...)
+#define MODULE_(...)
+#define STRUCTS(...)
+#define UNIONS(...)
+#define FUNCS(...)
+#define LAMBDAS(...)
+#define ENUMS(...)
+#define VARS(...)
+#define TYPEDEFS(...)
+
+#endif // APIC_REFLECT
 
 #endif // APIC_H
