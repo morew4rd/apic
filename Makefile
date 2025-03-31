@@ -16,7 +16,7 @@ clean-dir: ## clean test build
 	mkdir -p ${BUILD_DIR}
 
 build-basic: ## build tests
-	cc -o ${BUILD_DIR}/basic_reflect -I src -I test test/basic_reflect.c
+	cc -o ${BUILD_DIR}/basic_reflect -I src -I test src/apic_pp.c test/basic_reflect.c
 	cc -o ${BUILD_DIR}/basic_header -I src -I test test/basic_header.c
 
 run-test: clean-dir build-basic 	## rebuild and run tests

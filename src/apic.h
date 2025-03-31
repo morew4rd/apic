@@ -1,9 +1,7 @@
 #ifndef APIC_H
 #define APIC_H
 
-#include <stdio.h>
 #include <string.h>
-
 
 #ifdef APIC_REFLECT
 /* ----------------- Reflection Mode ---------------- */

@@ -1,4 +1,5 @@
 #include "basic.h"
+#include <stdio.h>
 
 // will be assigned to a lambda value
 int add_impl(int a, float b) { return a + (int)b; }
