@@ -1,6 +1,5 @@
 ## dev notes
 
-## future
-
-- make it self-defining
-- something like "visitor" pattern for extensions
+- Public API code gen
+- Lua code gen
+-

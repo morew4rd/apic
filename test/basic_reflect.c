@@ -1,8 +1,9 @@
 #define APIC_REFLECT
-#include "basic.h"
-#include "apic_pp.h"
+#include "basic_apic.h"
+#include "apic_ext_pp.h"
+
 
 int main() {
-    apic_print_module(&MyModule);
-   return 0;
+    apic_ext_pp(&MyModule);
+    return 0;
 }

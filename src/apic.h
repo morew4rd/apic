@@ -1,8 +1,6 @@
 #ifndef APIC_H
 #define APIC_H
 
-#include <string.h>
-
 #ifdef APIC_REFLECT
 /* ----------------- Reflection Mode ---------------- */
 typedef struct Field { const char *name, *type, *doc; } Field;

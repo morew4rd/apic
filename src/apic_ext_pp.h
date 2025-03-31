@@ -1,8 +1,14 @@
-#include "apic_pp.h"
+#ifndef APIC_EXT_PP_H
+#define APIC_EXT_PP_H
+
+#define APIC_REFLECT
+#include "apic.h"
+
 #include <stdio.h>
 
-void apic_print_module(Module *module) {
-    printf("Module: %s\nDescription: %s\n\n", module->name, module->doc);
+static void apic_ext_pp(Module *module) {
+    printf("\n=============================================\n\n");
+    printf("Module: %s\n\nDescription: %s\n\n", module->name, module->doc);
 
     printf("=== Structs (%d) ===\n", module->struct_count);
     for(int i = 0; i < module->struct_count; i++) {
@@ -72,4 +78,7 @@ void apic_print_module(Module *module) {
         Typedef *t = module->typedefs[i];
         printf("%s = %s (%s)\n", t->name, t->type, t->doc);
     }
+    printf("\n=============================================\n\n");
 }
+
+#endif // APIC_EXT_PP_H
