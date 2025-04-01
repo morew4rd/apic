@@ -157,8 +157,8 @@ typedef struct Exports {
 #define VAR(name, type) VAR_(name, type, "")
 #define TDEF_(name, type, doc) typedef type name;
 #define TDEF(name, type) TDEF_(name, type, "")
-#define A_(type, name, doc) type name
-#define A(type, name) A_(type, name, "")
+#define A_(name, type, doc) type name
+#define A(name, type) A_(name, type, "")
 #define N_(n,v,s,doc) n = v
 #define N(n,v,s) N_(n,v,s,"")
 

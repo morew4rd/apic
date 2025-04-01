@@ -40,13 +40,13 @@ VAR_(max_connections, int, "Maximum allowed connections");
 TDEF_(Byte, unsigned char, "Single byte type");
 
 FUNC_(add_mixed, "Adds int and float", int,
-    A(int, a),
-    A(float, b)
+    A(a, int),
+    A(b, float)
 );
 
 LAMBDA_(Adder, "Adds int and float", int,
-    A(int, a),
-    A(float, b)
+    A(a, int),
+    A(b, float)
 );
 
 STRUCT(Calculator,
