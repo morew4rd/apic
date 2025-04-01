@@ -16,9 +16,10 @@ clean-dir: ## clean test build
 	mkdir -p ${BUILD_DIR}
 
 build-basic: ## build tests
-	cc -o ${BUILD_DIR}/basic_reflect -I src -I test test/basic_reflect.c
-	cc -o ${BUILD_DIR}/basic_header -I src -I test test/basic_header.c
+	cc -o ${BUILD_DIR}/basic_reflect -I src test/basic/basic_reflect.c
+	cc -o ${BUILD_DIR}/basic_header -I src test/basic/basic_header.c
 
 run-test: clean-dir build-basic 	## rebuild and run tests
-	${BUILD_DIR}/basic_reflect
 	${BUILD_DIR}/basic_header
+	${BUILD_DIR}/basic_reflect > test/output/basic_reflect_output.c
+	cat test/output/basic_reflect_output.c
