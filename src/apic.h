@@ -13,7 +13,7 @@ typedef struct Func { const char *kind; const char *name, *doc; const char *ret;
 typedef struct Lambda { const char *kind; const char *name, *doc; const char *ret; Arg *args; int count; } Lambda;
 typedef struct EnumEntry { const char *name; int value; const char *str, *doc; } EnumEntry;
 typedef struct Enum { const char *name, *doc; EnumEntry *entries; int count; } Enum;
-typedef struct Module {
+typedef struct Exports {
     const char *name, *doc;
     Struct **structs;
     Union **unions;
@@ -29,7 +29,7 @@ typedef struct Module {
     int enum_count;
     int var_count;
     int typedef_count;
-} Module;
+} Exports;
 
 /* ----------------- Field Macros ----------------- */
 #define F_(n,t,d) {#n, #t, d}
@@ -86,7 +86,7 @@ typedef struct Module {
 /* --------------- Pointer Helpers --------------- */
 #define PTR(TYPE) TYPE*
 
-/* --------------- Module Macros --------------- */
+/* --------------- Exports Macros --------------- */
 #define STRUCTS(...) .structs = (Struct*[]){__VA_ARGS__}, .struct_count = sizeof((Struct*[]){__VA_ARGS__})/sizeof(Struct*)
 #define UNIONS(...) .unions = (Union*[]){__VA_ARGS__}, .union_count = sizeof((Union*[]){__VA_ARGS__})/sizeof(Union*)
 #define FUNCS(...) .funcs = (Func*[]){__VA_ARGS__}, .func_count = sizeof((Func*[]){__VA_ARGS__})/sizeof(Func*)
@@ -95,8 +95,8 @@ typedef struct Module {
 #define VARS(...) .vars = (Var*[]){__VA_ARGS__}, .var_count = sizeof((Var*[]){__VA_ARGS__})/sizeof(Var*)
 #define TYPEDEFS(...) .typedefs = (Typedef*[]){__VA_ARGS__}, .typedef_count = sizeof((Typedef*[]){__VA_ARGS__})/sizeof(Typedef*)
 
-#define MODULE_(n, d, ...) Module n = {.name = #n, .doc = d, __VA_ARGS__}
-#define MODULE(n, ...) MODULE_(n, "", __VA_ARGS__)
+#define EXPORTS_(n, d, ...) Exports n = {.name = #n, .doc = d, __VA_ARGS__}
+#define EXPORTS(n, ...) EXPORTS_(n, "", __VA_ARGS__)
 
 #else // APIC_REFLECT
 /* ----------------- Header Mode ---------------- */
@@ -187,9 +187,9 @@ typedef struct Module {
 #define ENUM_(name, docstr, ...) typedef enum name { __VA_ARGS__ } name
 #define ENUM(name, ...) ENUM_(name, "", __VA_ARGS__)
 
-/* --------------- Module Macros --------------- */
-#define MODULE(...)
-#define MODULE_(...)
+/* --------------- Exports Macros --------------- */
+#define EXPORTS(...)
+#define EXPORTS_(...)
 #define STRUCTS(...)
 #define UNIONS(...)
 #define FUNCS(...)

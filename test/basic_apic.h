@@ -60,7 +60,7 @@ ENUM_(COLOR, "Basic colors",
     N_(BLUE, 2, "blue", "Primary color")
 );
 
-MODULE_(MyModule, "Example module with full documentation support",
+EXPORTS_(MyExports, "Example exports with full documentation support",
     ENUMS(&COLOR),
     STRUCTS(&Vec2I, &Vec3I, &Calculator, &Node, &Buffer, &Matrix),
     UNIONS(&Number),
