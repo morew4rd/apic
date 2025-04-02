@@ -1,7 +1,5 @@
-#ifndef APIC_EXT_PRETTYPRINT_H
-#define APIC_EXT_PRETTYPRINT_H
+#ifdef APIC_REFLECT
 
-#define APIC_REFLECT
 #include "apic.h"
 
 /*
@@ -10,7 +8,7 @@
 
 #include <stdio.h>
 
-static void apic_ext_prettyprint(Exports *exports) {
+static void apic_ext_print_raw(Exports *exports) {
     printf("\n=============================================\n\n");
     printf("Exports: %s\n\nDescription: %s\n\n", exports->name, exports->doc);
 
@@ -85,4 +83,4 @@ static void apic_ext_prettyprint(Exports *exports) {
     printf("\n=============================================\n\n");
 }
 
-#endif // APIC_EXT_PRETTYPRINT_H
+#endif // APIC_REFLECT

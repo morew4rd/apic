@@ -1,16 +1,8 @@
-#ifndef APIC_EXT_PRINT_PUBLIC_HEADER_H
-#define APIC_EXT_PRINT_PUBLIC_HEADER_H
+#ifdef APIC_REFLECT
 
-#define APIC_REFLECT
 #include "apic.h"
-
 #include <stdio.h>
-
-static void __impl_ext_print_public_header(Exports *exports, FILE *out);
-
-static inline void apic_ext_print_public_header(Exports *exports) {
-    __impl_ext_print_public_header(exports, stdout);
-}
+#include <string.h>
 
 static void __impl_ext_print_public_header(Exports *exports, FILE *out) {
     fprintf(out, "// =============================================\n");
@@ -19,8 +11,6 @@ static void __impl_ext_print_public_header(Exports *exports, FILE *out) {
     fprintf(out, "// =============================================\n\n");
     fprintf(out, "#ifndef %s_PUBLIC_H\n", exports->name);
     fprintf(out, "#define %s_PUBLIC_H\n\n", exports->name);
-
-    // Print includes
     fprintf(out, "#include <stdint.h>\n\n");
 
     // Print typedefs first
@@ -42,13 +32,14 @@ static void __impl_ext_print_public_header(Exports *exports, FILE *out) {
             fprintf(out, "typedef enum %s {\n", en->name);
             for (int j = 0; j < en->count; j++) {
                 EnumEntry e = en->entries[j];
-                fprintf(out, "    %s = %d, // %s (%s)\n", e.name, e.value, e.str, e.doc);
+                fprintf(out, "    %s = %d, // %s (%s)\n",
+                       e.name, e.value, e.str, e.doc);
             }
             fprintf(out, "} %s;\n\n", en->name);
         }
     }
 
-    // Print struct forward declarations
+    // Print forward declarations
     if (exports->struct_count > 0) {
         fprintf(out, "/* ========== Forward Declarations ========= */\n");
         for (int i = 0; i < exports->struct_count; i++) {
@@ -58,16 +49,27 @@ static void __impl_ext_print_public_header(Exports *exports, FILE *out) {
         fprintf(out, "\n");
     }
 
-    // Print struct definitions
+    // Print structs with fixed array syntax
     if (exports->struct_count > 0) {
         fprintf(out, "/* ============== Structs ============== */\n");
         for (int i = 0; i < exports->struct_count; i++) {
             Struct *st = exports->structs[i];
             fprintf(out, "// %s\n", st->doc);
             fprintf(out, "struct %s {\n", st->name);
+
             for (int j = 0; j < st->count; j++) {
                 Field f = st->fields[j];
-                fprintf(out, "    %s %s; // %s\n", f.type, f.name, f.doc);
+                char *bracket = strchr(f.type, '[');
+
+                if (bracket) {
+                    // Handle array types
+                    fprintf(out, "    %.*s %s%s; // %s\n",
+                           (int)(bracket - f.type), f.type,
+                           f.name, bracket, f.doc);
+                } else {
+                    // Normal types
+                    fprintf(out, "    %s %s; // %s\n", f.type, f.name, f.doc);
+                }
             }
             fprintf(out, "};\n\n");
         }
@@ -88,7 +90,7 @@ static void __impl_ext_print_public_header(Exports *exports, FILE *out) {
         }
     }
 
-    // Print lambdas (function pointer types)
+    // Print lambdas
     if (exports->lambda_count > 0) {
         fprintf(out, "/* ============== Lambdas ============== */\n");
         for (int i = 0; i < exports->lambda_count; i++) {
@@ -133,4 +135,9 @@ static void __impl_ext_print_public_header(Exports *exports, FILE *out) {
     fprintf(out, "#endif // %s_PUBLIC_H\n", exports->name);
 }
 
-#endif // APIC_EXT_PRINT_PUBLIC_HEADER_H
+static inline void apic_ext_gen_exported_c_header(Exports *exports) {
+    __impl_ext_print_public_header(exports, stdout);
+}
+
+#endif // APIC_REFLECT
+

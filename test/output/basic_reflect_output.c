@@ -60,13 +60,13 @@ struct Node {
 
 // 
 struct Buffer {
-    char[256] data; // 
+    char data[256]; // 
     int size; // Current buffer size
 };
 
 // 
 struct Matrix {
-    float[16] values; // 
+    float values[16]; // 
     int rows; // Matrix dimensions
     int cols; // 
 };
@@ -181,28 +181,30 @@ Byte = unsigned char (Single byte type)
 
 All type checks passed successfully!
 
-*/
 
 ----------------------------------------------------------
 
+*/
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
+#include <string.h>
 
-static const char* resolve_typedef(Exports *exports, const char *type) {
-    for (int i = 0; i < exports->typedef_count; i++) {
-        if (strcmp(exports->typedefs[i]->name, type) == 0)
-            return exports->typedefs[i]->type;
-    }
-    return type;
+static int is_integer_type(const char *type) {
+    return strstr(type, "int") != NULL || 
+           strstr(type, "long") != NULL || 
+           strstr(type, "short") != NULL || 
+           strstr(type, "char") != NULL;
 }
 
-static int get_enum_value(Enum *en, const char *str) {
-    for (int i = 0; i < en->count; i++) {
-        if (strcmp(en->entries[i].str, str) == 0)
-            return en->entries[i].value;
-    }
-    return -1;
+static int is_float_type(const char *type) {
+    return strstr(type, "float") != NULL || 
+           strstr(type, "double") != NULL;
+}
+
+static int is_string_type(const char *type) {
+    return strstr(type, "char*") != NULL || 
+           strstr(type, "const char*") != NULL;
 }
 
 static int lua_Vec2I_new(lua_State *L) {
@@ -217,11 +219,11 @@ static int lua_Vec2I_index(lua_State *L) {
     Vec2I *ud = (Vec2I *)luaL_checkudata(L, 1, "Vec2I");
     const char *field = luaL_checkstring(L, 2);
     if (strcmp(field, "x") == 0) {
-        lua_pushlightuserdata(L, &ud->x);
+        lua_pushinteger(L, ud->x);
         return 1;
     }
     if (strcmp(field, "y") == 0) {
-        lua_pushlightuserdata(L, &ud->y);
+        lua_pushinteger(L, ud->y);
         return 1;
     }
     lua_pushnil(L);
@@ -232,11 +234,11 @@ static int lua_Vec2I_newindex(lua_State *L) {
     Vec2I *ud = (Vec2I *)luaL_checkudata(L, 1, "Vec2I");
     const char *field = luaL_checkstring(L, 2);
     if (strcmp(field, "x") == 0) {
-        memcpy(&ud->x, lua_touserdata(L, 3), sizeof(ud->x));
+        ud->x = luaL_checkinteger(L, 3);
         return 0;
     }
     if (strcmp(field, "y") == 0) {
-        memcpy(&ud->y, lua_touserdata(L, 3), sizeof(ud->y));
+        ud->y = luaL_checkinteger(L, 3);
         return 0;
     }
     return luaL_error(L, "Invalid field: %s", field);
@@ -254,15 +256,15 @@ static int lua_Vec3I_index(lua_State *L) {
     Vec3I *ud = (Vec3I *)luaL_checkudata(L, 1, "Vec3I");
     const char *field = luaL_checkstring(L, 2);
     if (strcmp(field, "x") == 0) {
-        lua_pushlightuserdata(L, &ud->x);
+        lua_pushinteger(L, ud->x);
         return 1;
     }
     if (strcmp(field, "y") == 0) {
-        lua_pushlightuserdata(L, &ud->y);
+        lua_pushinteger(L, ud->y);
         return 1;
     }
     if (strcmp(field, "z") == 0) {
-        lua_pushlightuserdata(L, &ud->z);
+        lua_pushinteger(L, ud->z);
         return 1;
     }
     lua_pushnil(L);
@@ -273,15 +275,15 @@ static int lua_Vec3I_newindex(lua_State *L) {
     Vec3I *ud = (Vec3I *)luaL_checkudata(L, 1, "Vec3I");
     const char *field = luaL_checkstring(L, 2);
     if (strcmp(field, "x") == 0) {
-        memcpy(&ud->x, lua_touserdata(L, 3), sizeof(ud->x));
+        ud->x = luaL_checkinteger(L, 3);
         return 0;
     }
     if (strcmp(field, "y") == 0) {
-        memcpy(&ud->y, lua_touserdata(L, 3), sizeof(ud->y));
+        ud->y = luaL_checkinteger(L, 3);
         return 0;
     }
     if (strcmp(field, "z") == 0) {
-        memcpy(&ud->z, lua_touserdata(L, 3), sizeof(ud->z));
+        ud->z = luaL_checkinteger(L, 3);
         return 0;
     }
     return luaL_error(L, "Invalid field: %s", field);
@@ -299,11 +301,11 @@ static int lua_Calculator_index(lua_State *L) {
     Calculator *ud = (Calculator *)luaL_checkudata(L, 1, "Calculator");
     const char *field = luaL_checkstring(L, 2);
     if (strcmp(field, "adder") == 0) {
-        lua_pushlightuserdata(L, &ud->adder);
+        lua_pushlightuserdata(L, ud->adder);
         return 1;
     }
     if (strcmp(field, "value") == 0) {
-        lua_pushlightuserdata(L, &ud->value);
+        lua_pushnumber(L, ud->value);
         return 1;
     }
     lua_pushnil(L);
@@ -314,11 +316,11 @@ static int lua_Calculator_newindex(lua_State *L) {
     Calculator *ud = (Calculator *)luaL_checkudata(L, 1, "Calculator");
     const char *field = luaL_checkstring(L, 2);
     if (strcmp(field, "adder") == 0) {
-        memcpy(&ud->adder, lua_touserdata(L, 3), sizeof(ud->adder));
+        ud->adder = lua_touserdata(L, 3);
         return 0;
     }
     if (strcmp(field, "value") == 0) {
-        memcpy(&ud->value, lua_touserdata(L, 3), sizeof(ud->value));
+        ud->value = luaL_checknumber(L, 3);
         return 0;
     }
     return luaL_error(L, "Invalid field: %s", field);
@@ -336,11 +338,11 @@ static int lua_Node_index(lua_State *L) {
     Node *ud = (Node *)luaL_checkudata(L, 1, "Node");
     const char *field = luaL_checkstring(L, 2);
     if (strcmp(field, "value") == 0) {
-        lua_pushlightuserdata(L, &ud->value);
+        lua_pushinteger(L, ud->value);
         return 1;
     }
     if (strcmp(field, "next") == 0) {
-        lua_pushlightuserdata(L, &ud->next);
+        lua_pushlightuserdata(L, ud->next);
         return 1;
     }
     lua_pushnil(L);
@@ -351,11 +353,11 @@ static int lua_Node_newindex(lua_State *L) {
     Node *ud = (Node *)luaL_checkudata(L, 1, "Node");
     const char *field = luaL_checkstring(L, 2);
     if (strcmp(field, "value") == 0) {
-        memcpy(&ud->value, lua_touserdata(L, 3), sizeof(ud->value));
+        ud->value = luaL_checkinteger(L, 3);
         return 0;
     }
     if (strcmp(field, "next") == 0) {
-        memcpy(&ud->next, lua_touserdata(L, 3), sizeof(ud->next));
+        ud->next = lua_touserdata(L, 3);
         return 0;
     }
     return luaL_error(L, "Invalid field: %s", field);
@@ -373,11 +375,11 @@ static int lua_Buffer_index(lua_State *L) {
     Buffer *ud = (Buffer *)luaL_checkudata(L, 1, "Buffer");
     const char *field = luaL_checkstring(L, 2);
     if (strcmp(field, "data") == 0) {
-        lua_pushlightuserdata(L, &ud->data);
+        lua_pushlstring(L, (const char*)ud->data, sizeof(ud->data));
         return 1;
     }
     if (strcmp(field, "size") == 0) {
-        lua_pushlightuserdata(L, &ud->size);
+        lua_pushinteger(L, ud->size);
         return 1;
     }
     lua_pushnil(L);
@@ -387,12 +389,8 @@ static int lua_Buffer_index(lua_State *L) {
 static int lua_Buffer_newindex(lua_State *L) {
     Buffer *ud = (Buffer *)luaL_checkudata(L, 1, "Buffer");
     const char *field = luaL_checkstring(L, 2);
-    if (strcmp(field, "data") == 0) {
-        memcpy(&ud->data, lua_touserdata(L, 3), sizeof(ud->data));
-        return 0;
-    }
     if (strcmp(field, "size") == 0) {
-        memcpy(&ud->size, lua_touserdata(L, 3), sizeof(ud->size));
+        ud->size = luaL_checkinteger(L, 3);
         return 0;
     }
     return luaL_error(L, "Invalid field: %s", field);
@@ -410,15 +408,15 @@ static int lua_Matrix_index(lua_State *L) {
     Matrix *ud = (Matrix *)luaL_checkudata(L, 1, "Matrix");
     const char *field = luaL_checkstring(L, 2);
     if (strcmp(field, "values") == 0) {
-        lua_pushlightuserdata(L, &ud->values);
+        lua_pushlstring(L, (const char*)ud->values, sizeof(ud->values));
         return 1;
     }
     if (strcmp(field, "rows") == 0) {
-        lua_pushlightuserdata(L, &ud->rows);
+        lua_pushinteger(L, ud->rows);
         return 1;
     }
     if (strcmp(field, "cols") == 0) {
-        lua_pushlightuserdata(L, &ud->cols);
+        lua_pushinteger(L, ud->cols);
         return 1;
     }
     lua_pushnil(L);
@@ -428,89 +426,98 @@ static int lua_Matrix_index(lua_State *L) {
 static int lua_Matrix_newindex(lua_State *L) {
     Matrix *ud = (Matrix *)luaL_checkudata(L, 1, "Matrix");
     const char *field = luaL_checkstring(L, 2);
-    if (strcmp(field, "values") == 0) {
-        memcpy(&ud->values, lua_touserdata(L, 3), sizeof(ud->values));
-        return 0;
-    }
     if (strcmp(field, "rows") == 0) {
-        memcpy(&ud->rows, lua_touserdata(L, 3), sizeof(ud->rows));
+        ud->rows = luaL_checkinteger(L, 3);
         return 0;
     }
     if (strcmp(field, "cols") == 0) {
-        memcpy(&ud->cols, lua_touserdata(L, 3), sizeof(ud->cols));
+        ud->cols = luaL_checkinteger(L, 3);
         return 0;
     }
     return luaL_error(L, "Invalid field: %s", field);
 }
 
 static int lua_add_mixed(lua_State *L) {
-    int arg1;
-    float arg2;
     if (lua_gettop(L) != 2) return luaL_error(L, "add_mixed expects 2 args");
-    arg1 = *((int *)lua_touserdata(L, 1));
-    arg2 = *((float *)lua_touserdata(L, 2));
+    int arg1 = luaL_checkinteger(L, 1);
+    float arg2 = luaL_checknumber(L, 2);
     int result = add_mixed(arg1, arg2);
-    lua_pushlightuserdata(L, &result);
+    lua_pushinteger(L, result);
     return 1;
 }
 
 static void register_enums(lua_State *L) {
     lua_newtable(L);
-    lua_pushstring(L, "red");
+    lua_pushinteger(L, 0);
     lua_setfield(L, -2, "RED");
-    lua_pushstring(L, "green");
+    lua_pushinteger(L, 1);
     lua_setfield(L, -2, "GREEN");
-    lua_pushstring(L, "blue");
+    lua_pushinteger(L, 2);
     lua_setfield(L, -2, "BLUE");
     lua_setglobal(L, "COLOR");
+}
+
+static void register_vars(lua_State *L) {
+    lua_pushinteger(L, app_name);
+    lua_setglobal(L, "app_name");
+    lua_pushinteger(L, max_connections);
+    lua_setglobal(L, "max_connections");
 }
 
 int luaopen_MyExports(lua_State *L) {
     luaL_openlibs(L);
     register_enums(L);
+    register_vars(L);
     luaL_newmetatable(L, "Vec2I");
     lua_pushcfunction(L, lua_Vec2I_index);
     lua_setfield(L, -2, "__index");
     lua_pushcfunction(L, lua_Vec2I_newindex);
     lua_setfield(L, -2, "__newindex");
     lua_pop(L, 1);
-    lua_register(L, "Vec2I_new", lua_Vec2I_new);
+    lua_pushcfunction(L, lua_Vec2I_new);
+    lua_setglobal(L, "Vec2I_new");
     luaL_newmetatable(L, "Vec3I");
     lua_pushcfunction(L, lua_Vec3I_index);
     lua_setfield(L, -2, "__index");
     lua_pushcfunction(L, lua_Vec3I_newindex);
     lua_setfield(L, -2, "__newindex");
     lua_pop(L, 1);
-    lua_register(L, "Vec3I_new", lua_Vec3I_new);
+    lua_pushcfunction(L, lua_Vec3I_new);
+    lua_setglobal(L, "Vec3I_new");
     luaL_newmetatable(L, "Calculator");
     lua_pushcfunction(L, lua_Calculator_index);
     lua_setfield(L, -2, "__index");
     lua_pushcfunction(L, lua_Calculator_newindex);
     lua_setfield(L, -2, "__newindex");
     lua_pop(L, 1);
-    lua_register(L, "Calculator_new", lua_Calculator_new);
+    lua_pushcfunction(L, lua_Calculator_new);
+    lua_setglobal(L, "Calculator_new");
     luaL_newmetatable(L, "Node");
     lua_pushcfunction(L, lua_Node_index);
     lua_setfield(L, -2, "__index");
     lua_pushcfunction(L, lua_Node_newindex);
     lua_setfield(L, -2, "__newindex");
     lua_pop(L, 1);
-    lua_register(L, "Node_new", lua_Node_new);
+    lua_pushcfunction(L, lua_Node_new);
+    lua_setglobal(L, "Node_new");
     luaL_newmetatable(L, "Buffer");
     lua_pushcfunction(L, lua_Buffer_index);
     lua_setfield(L, -2, "__index");
     lua_pushcfunction(L, lua_Buffer_newindex);
     lua_setfield(L, -2, "__newindex");
     lua_pop(L, 1);
-    lua_register(L, "Buffer_new", lua_Buffer_new);
+    lua_pushcfunction(L, lua_Buffer_new);
+    lua_setglobal(L, "Buffer_new");
     luaL_newmetatable(L, "Matrix");
     lua_pushcfunction(L, lua_Matrix_index);
     lua_setfield(L, -2, "__index");
     lua_pushcfunction(L, lua_Matrix_newindex);
     lua_setfield(L, -2, "__newindex");
     lua_pop(L, 1);
-    lua_register(L, "Matrix_new", lua_Matrix_new);
-    lua_register(L, "add_mixed", lua_add_mixed);
+    lua_pushcfunction(L, lua_Matrix_new);
+    lua_setglobal(L, "Matrix_new");
+    lua_pushcfunction(L, lua_add_mixed);
+    lua_setglobal(L, "add_mixed");
     return 1;
 }
 

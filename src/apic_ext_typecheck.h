@@ -1,7 +1,5 @@
-#ifndef APIC_EXT_TYPECHECK_H
-#define APIC_EXT_TYPECHECK_H
+#ifdef APIC_REFLECT
 
-#define APIC_REFLECT
 #include "apic.h"
 #include <stdio.h>
 #include <string.h>
@@ -237,4 +235,4 @@ void apic_ext_typecheck(Exports* exports) {
     }
 }
 
-#endif // APIC_EXT_TYPECHECK_H
+#endif // APIC_REFLECT
