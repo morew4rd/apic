@@ -1,4 +1,4 @@
-#include "apic.h"
+#include "../../src/apic.h"
 
 STRUCT(Vec2I,
     F_(x, int, "X coordinate"),

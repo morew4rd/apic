@@ -5,6 +5,7 @@
 
 #ifdef APIC_REFLECT
 
+#include "apic_ext_types.h"
 #include "apic_ext_typecheck.h"
 #include "apic_ext_print_raw.h"
 #include "apic_ext_gen_exported_c_header.h"
