@@ -78,7 +78,7 @@ typedef union Number {
     float f; // Floating point storage
 } Number;
 
-/* ============== apic_Lambdas ============== */
+/* ============== apic_FuncPtrs ============== */
 // Adds int and float
 typedef int (*Adder)(int a, float b);
 
@@ -145,7 +145,7 @@ apic_Args (2):
   a: int ()
   b: float ()
 
-=== apic_Lambdas (1) ===
+=== apic_FuncPtrs (1) ===
 Adder: Adds int and float
 Returns: int
 apic_Args (2):

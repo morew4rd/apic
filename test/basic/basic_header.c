@@ -1,7 +1,7 @@
 #include "basic.apic.h"
 #include <stdio.h>
 
-// will be assigned to a lambda value
+// will be assigned to a funcptr value
 int add_impl(int a, float b) { return a + (int)b; }
 
 int main() {
@@ -20,7 +20,7 @@ int main() {
     printf("5 + 3.7 = %d\n", add_mixed(5, 3.7f));
 
     Calculator calc = {.adder = add_impl, .value = 3.14f};
-    printf("5 + 3.7 via lambda: %d\n", calc.adder(5, 3.7f));
+    printf("5 + 3.7 via funcptr: %d\n", calc.adder(5, 3.7f));
 
     COLOR c = RED;
     printf("Color value: %d\n", c);

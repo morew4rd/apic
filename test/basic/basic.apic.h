@@ -41,7 +41,7 @@ FUNC_(add_mixed, "Adds int and float", int,
     A(b, float)
 );
 
-LAMBDA_(Adder, "Adds int and float", int,
+FUNCPTR_(Adder, "Adds int and float", int,
     A(a, int),
     A(b, float)
 );
@@ -62,6 +62,6 @@ EXPORTS_(mysimplelib, "Example exports with full documentation support",
     STRUCTS(&Vec2I, &Vec3I, &Calculator, &Node, &Buffer, &Matrix),
     UNIONS(&Number),
     FUNCS(&add_mixed),
-    LAMBDAS(&Adder),
+    FUNCPTRS(&Adder),
     TYPEDEFS(&Byte)
 );

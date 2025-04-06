@@ -78,9 +78,9 @@ static int find_typedef(apic_Exports* exports, const char* name) {
     return 0;
 }
 
-static int find_lambda(apic_Exports* exports, const char* name) {
-    for (int i = 0; i < exports->lambda_count; i++) {
-        if (strcmp(exports->lambdas[i]->name, name) == 0) return 1;
+static int find_funcptr(apic_Exports* exports, const char* name) {
+    for (int i = 0; i < exports->funcptr_count; i++) {
+        if (strcmp(exports->funcptrs[i]->name, name) == 0) return 1;
     }
     return 0;
 }
@@ -142,7 +142,7 @@ static int check_type(apic_Exports* exports, TypeCheckContext* ctx, const char* 
            find_union(exports, base) ||
            find_enum(exports, base) ||
            find_typedef(exports, base) ||
-           find_lambda(exports, base);
+           find_funcptr(exports, base);
 }
 
 static void check_field(apic_Exports* exports, TypeCheckContext* ctx, const char* context, apic_Field f) {
@@ -196,15 +196,15 @@ void apic_ext_typecheck(apic_Exports* exports) {
         }
     }
 
-    // Validate lambdas
-    for (int i = 0; i < exports->lambda_count; i++) {
-        apic_Lambda* lam = exports->lambdas[i];
+    // Validate funcptrs
+    for (int i = 0; i < exports->funcptr_count; i++) {
+        apic_FuncPtr* lam = exports->funcptrs[i];
         if (!check_type(exports, &ctx, lam->ret)) {
-            report_error(&ctx, "Invalid return type '%s' for lambda %s",
+            report_error(&ctx, "Invalid return type '%s' for funcptr %s",
                         lam->ret, lam->name);
         }
         char context[128];
-        snprintf(context, sizeof(context), "lambda %s", lam->name);
+        snprintf(context, sizeof(context), "funcptr %s", lam->name);
         for (int j = 0; j < lam->count; j++) {
             check_arg(exports, &ctx, context, lam->args[j]);
         }

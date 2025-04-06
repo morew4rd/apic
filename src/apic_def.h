@@ -26,14 +26,14 @@
 
 #define PTR      APIC_PTR
 
-#define LAMBDA_  APIC_LAMBDA_
-#define LAMBDA   APIC_LAMBDA
+#define FUNCPTR_ APIC_FUNCPTR_
+#define FUNCPTR  APIC_FUNCPTR
 
 #define STRUCTS  APIC_STRUCTS
 #define UNIONS   APIC_UNIONS
 #define ENUMS    APIC_ENUMS
 #define FUNCS    APIC_FUNCS
-#define LAMBDAS  APIC_LAMBDAS
+#define FUNCPTRS APIC_FUNCPTRS
 #define TYPEDEFS APIC_TYPEDEFS
 
 #define EXPORTS_ APIC_EXPORTS_
@@ -75,9 +75,9 @@
 #define APIC_FUNC_(name, docstr, ret, ...) ret name(__VA_ARGS__)
 #define APIC_FUNC(name, ret, ...) APIC_FUNC_(name, "", ret, __VA_ARGS__)
 
-/* ----------------- apic_Lambda Macros ----------------- */
-#define APIC_LAMBDA_(name, docstr, ret, ...) typedef ret (*name)(__VA_ARGS__)
-#define APIC_LAMBDA(name, ret, ...) APIC_LAMBDA_(name, "", ret, __VA_ARGS__)
+/* ----------------- apic_FuncPtr Macros ----------------- */
+#define APIC_FUNCPTR_(name, docstr, ret, ...) typedef ret (*name)(__VA_ARGS__)
+#define APIC_FUNCPTR(name, ret, ...) APIC_FUNCPTR_(name, "", ret, __VA_ARGS__)
 
 /* ------------------ apic_Enum Macros ------------------ */
 #define APIC_ENUM_(name, docstr, ...) typedef enum name { __VA_ARGS__ } name
@@ -90,7 +90,7 @@
 #define APIC_STRUCTS(...)
 #define APIC_UNIONS(...)
 #define APIC_FUNCS(...)
-#define APIC_LAMBDAS(...)
+#define APIC_FUNCPTRS(...)
 #define APIC_ENUMS(...)
 #define APIC_TYPEDEFS(...)
 
@@ -154,7 +154,7 @@ typedef struct apic_Struct { const char *kind; const char *name, *doc; apic_Fiel
 typedef struct apic_Union { const char *kind; const char *name, *doc; apic_Field *fields; int count; } apic_Union;
 typedef struct apic_Arg { const char *name, *type, *doc; } apic_Arg;
 typedef struct apic_Func { const char *kind; const char *name, *doc; const char *ret; apic_Arg *args; int count; } apic_Func;
-typedef struct apic_Lambda { const char *kind; const char *name, *doc; const char *ret; apic_Arg *args; int count; } apic_Lambda;
+typedef struct apic_FuncPtr { const char *kind; const char *name, *doc; const char *ret; apic_Arg *args; int count; } apic_FuncPtr;
 typedef struct apic_apic_EnumEntry { const char *name; int value; const char *str, *doc; } apic_apic_EnumEntry;
 typedef struct apic_Enum { const char *name, *doc; apic_apic_EnumEntry *entries; int count; } apic_Enum;
 typedef struct apic_Exports {
@@ -162,14 +162,14 @@ typedef struct apic_Exports {
     apic_Struct **structs;
     apic_Union **unions;
     apic_Func **funcs;
-    apic_Lambda **lambdas;
+    apic_FuncPtr **funcptrs;
     apic_Enum **enums;
     apic_Var **vars;
     apic_Typedef **typedefs;
     int struct_count;
     int union_count;
     int func_count;
-    int lambda_count;
+    int funcptr_count;
     int enum_count;
     int var_count;
     int typedef_count;
@@ -215,11 +215,11 @@ typedef struct apic_Exports {
     apic_Func name = {"function", #name, docstr, #ret, name##_args, sizeof(name##_args)/sizeof(apic_Arg)}
 #define APIC_FUNC(name, ret, ...) APIC_FUNC_(name, "", ret, __VA_ARGS__)
 
-/* ----------------- apic_Lambda Macros ----------------- */
-#define APIC_LAMBDA_(name, docstr, ret, ...) \
+/* ----------------- apic_FuncPtr Macros ----------------- */
+#define APIC_FUNCPTR_(name, docstr, ret, ...) \
     static apic_Arg name##_args[] = {__VA_ARGS__}; \
-    apic_Lambda name = {"lambda", #name, docstr, #ret, name##_args, sizeof(name##_args)/sizeof(apic_Arg)}
-#define APIC_LAMBDA(name, ret, ...) APIC_LAMBDA_(name, "", ret, __VA_ARGS__)
+    apic_FuncPtr name = {"funcptr", #name, docstr, #ret, name##_args, sizeof(name##_args)/sizeof(apic_Arg)}
+#define APIC_FUNCPTR(name, ret, ...) APIC_FUNCPTR_(name, "", ret, __VA_ARGS__)
 
 /* ------------------ apic_Enum Macros ------------------ */
 #define APIC_ENUM_(name, docstr, ...) \
@@ -231,7 +231,7 @@ typedef struct apic_Exports {
 #define APIC_STRUCTS(...) .structs = (apic_Struct*[]){__VA_ARGS__}, .struct_count = sizeof((apic_Struct*[]){__VA_ARGS__})/sizeof(apic_Struct*)
 #define APIC_UNIONS(...) .unions = (apic_Union*[]){__VA_ARGS__}, .union_count = sizeof((apic_Union*[]){__VA_ARGS__})/sizeof(apic_Union*)
 #define APIC_FUNCS(...) .funcs = (apic_Func*[]){__VA_ARGS__}, .func_count = sizeof((apic_Func*[]){__VA_ARGS__})/sizeof(apic_Func*)
-#define APIC_LAMBDAS(...) .lambdas = (apic_Lambda*[]){__VA_ARGS__}, .lambda_count = sizeof((apic_Lambda*[]){__VA_ARGS__})/sizeof(apic_Lambda*)
+#define APIC_FUNCPTRS(...) .funcptrs = (apic_FuncPtr*[]){__VA_ARGS__}, .funcptr_count = sizeof((apic_FuncPtr*[]){__VA_ARGS__})/sizeof(apic_FuncPtr*)
 #define APIC_ENUMS(...) .enums = (apic_Enum*[]){__VA_ARGS__}, .enum_count = sizeof((apic_Enum*[]){__VA_ARGS__})/sizeof(apic_Enum*)
 #define APIC_TYPEDEFS(...) .typedefs = (apic_Typedef*[]){__VA_ARGS__}, .typedef_count = sizeof((apic_Typedef*[]){__VA_ARGS__})/sizeof(apic_Typedef*)
 

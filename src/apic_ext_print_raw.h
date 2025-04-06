@@ -46,16 +46,16 @@ static void apic_ext_print_raw(apic_Exports *exports) {
         if(i < exports->func_count-1) printf("\n");
     }
 
-    printf("\n=== apic_Lambdas (%d) ===\n", exports->lambda_count);
-    for(int i = 0; i < exports->lambda_count; i++) {
-        apic_Lambda *lam = exports->lambdas[i];
+    printf("\n=== apic_FuncPtrs (%d) ===\n", exports->funcptr_count);
+    for(int i = 0; i < exports->funcptr_count; i++) {
+        apic_FuncPtr *lam = exports->funcptrs[i];
         printf("%s: %s\nReturns: %s\napic_Args (%d):\n",
                lam->name, lam->doc, lam->ret, lam->count);
         for(int j = 0; j < lam->count; j++) {
             apic_Arg a = lam->args[j];
             printf("  %s: %s (%s)\n", a.name, a.type, a.doc);
         }
-        if(i < exports->lambda_count-1) printf("\n");
+        if(i < exports->funcptr_count-1) printf("\n");
     }
 
     printf("\n=== apic_Enums (%d) ===\n", exports->enum_count);

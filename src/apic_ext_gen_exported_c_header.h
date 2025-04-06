@@ -90,11 +90,11 @@ static void __impl_ext_print_public_header(apic_Exports *exports, FILE *out) {
         }
     }
 
-    // Print lambdas
-    if (exports->lambda_count > 0) {
-        fprintf(out, "/* ============== apic_Lambdas ============== */\n");
-        for (int i = 0; i < exports->lambda_count; i++) {
-            apic_Lambda *lam = exports->lambdas[i];
+    // Print funcptrs
+    if (exports->funcptr_count > 0) {
+        fprintf(out, "/* ============== apic_FuncPtrs ============== */\n");
+        for (int i = 0; i < exports->funcptr_count; i++) {
+            apic_FuncPtr *lam = exports->funcptrs[i];
             fprintf(out, "// %s\n", lam->doc);
             fprintf(out, "typedef %s (*%s)(", lam->ret, lam->name);
             for (int j = 0; j < lam->count; j++) {
