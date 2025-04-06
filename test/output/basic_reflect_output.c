@@ -12,7 +12,7 @@
 
 #include <stdint.h>
 
-/* =============== apic_Typedefs =============== */
+/* =============== apic_Aliass =============== */
 // Single byte type
 typedef unsigned char Byte;
 
@@ -159,9 +159,7 @@ Entries (3):
   GREEN = 1 (green, Secondary color)
   BLUE = 2 (blue, Primary color)
 
-=== apic_Variables (0) ===
-
-=== apic_Typedefs (1) ===
+=== apic_Aliass (1) ===
 Byte = unsigned char (Single byte type)
 
 =============================================
@@ -175,7 +173,7 @@ All type checks passed successfully!
 ========== Typed API: mysimplelib ==========
 // Example exports with full documentation support
 
-apic_Typedefs (1):
+apic_Aliass (1):
   typedef unsigned char        → Byte
 
 apic_Structures (6):

@@ -1,4 +1,4 @@
-#define APIC_SHORTCUTS
+#define APIC_DEFINE_SHORTCUTS
 #include "../../src/apic.h"
 
 STRUCT(Vec2I,
@@ -33,7 +33,7 @@ STRUCT(Matrix,
     F(cols, int)
 );
 
-// apic_Typedef examples
+// apic_Alias examples
 ALIAS_(Byte, unsigned char, "Single byte type");
 
 FUNC_(add_mixed, "Adds int and float", int,
@@ -63,5 +63,5 @@ EXPORTS_(mysimplelib, "Example exports with full documentation support",
     UNIONS(&Number),
     FUNCS(&add_mixed),
     FUNCPTRS(&Adder),
-    TYPEDEFS(&Byte)
+    ALIASES(&Byte)
 );

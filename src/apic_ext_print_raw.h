@@ -69,15 +69,10 @@ static void apic_ext_print_raw(apic_Exports *exports) {
         if(i < exports->enum_count-1) printf("\n");
     }
 
-    printf("\n=== apic_Variables (%d) ===\n", exports->var_count);
-    for(int i = 0; i < exports->var_count; i++) {
-        apic_Var *v = exports->vars[i];
-        printf("%s: %s (%s)\n", v->name, v->type, v->doc);
-    }
 
-    printf("\n=== apic_Typedefs (%d) ===\n", exports->typedef_count);
+    printf("\n=== apic_Aliass (%d) ===\n", exports->typedef_count);
     for(int i = 0; i < exports->typedef_count; i++) {
-        apic_Typedef *t = exports->typedefs[i];
+        apic_Alias *t = exports->aliases[i];
         printf("%s = %s (%s)\n", t->name, t->type, t->doc);
     }
     printf("\n=============================================\n\n");

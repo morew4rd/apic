@@ -12,7 +12,7 @@ int main() {
 
     printf("\n\n//----------------------------------------------------------\n\n");
     apic_ext_typecheck(&mysimplelib);
-    Typed_MySimpleLib* tex = apic_ext_create_typed_exports(&mysimplelib);
+    apic_TypedExports* tex = apic_ext_create_typed_exports(&mysimplelib);
     apic_ext_print_typed(tex);
 
     // printf("\n\n----------------------------------------------------------\n");

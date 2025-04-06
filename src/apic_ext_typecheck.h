@@ -73,7 +73,7 @@ static int find_enum(apic_Exports* exports, const char* name) {
 
 static int find_typedef(apic_Exports* exports, const char* name) {
     for (int i = 0; i < exports->typedef_count; i++) {
-        if (strcmp(exports->typedefs[i]->name, name) == 0) return 1;
+        if (strcmp(exports->aliases[i]->name, name) == 0) return 1;
     }
     return 0;
 }
@@ -210,18 +210,10 @@ void apic_ext_typecheck(apic_Exports* exports) {
         }
     }
 
-    // Validate variables
-    for (int i = 0; i < exports->var_count; i++) {
-        apic_Var* v = exports->vars[i];
-        if (!check_type(exports, &ctx, v->type)) {
-            report_error(&ctx, "Invalid type '%s' for variable %s",
-                        v->type, v->name);
-        }
-    }
 
-    // Validate typedefs
+    // Validate aliases
     for (int i = 0; i < exports->typedef_count; i++) {
-        apic_Typedef* t = exports->typedefs[i];
+        apic_Alias* t = exports->aliases[i];
         if (!check_type(exports, &ctx, t->type)) {
             report_error(&ctx, "Invalid underlying type '%s' for typedef %s",
                         t->type, t->name);

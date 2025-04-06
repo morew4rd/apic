@@ -77,54 +77,54 @@ struct Type {
     } data;
 };
 
-typedef struct Typedapic_Field {
+typedef struct apic_TypedField {
     const char* name;
     Type* type;
     const char* doc;
-} Typedapic_Field;
+} apic_TypedField;
 
 struct apic_StructType {
     const char* name;
-    Typedapic_Field* fields;
+    apic_TypedField* fields;
     size_t num_fields;
     const char* doc;
 };
 
 struct apic_UnionType {
     const char* name;
-    Typedapic_Field* fields;
+    apic_TypedField* fields;
     size_t num_fields;
     const char* doc;
 };
 
-typedef struct Typedapic_apic_EnumEntry {
+typedef struct apic_Typedapic_EnumEntry {
     const char* name;
     int value;
     const char* doc;
-} Typedapic_apic_EnumEntry;
+} apic_Typedapic_EnumEntry;
 
 struct apic_EnumType {
     const char* name;
-    Typedapic_apic_EnumEntry* entries;
+    apic_Typedapic_EnumEntry* entries;
     size_t num_entries;
     const char* doc;
 };
 
-typedef struct Typedapic_Var {
+typedef struct apic_TypedVar {
     const char* name;
     Type* type;
     const char* doc;
-} Typedapic_Var;
+} apic_TypedVar;
 
-typedef struct Typedapic_Function {
+typedef struct apic_TypedFunction {
     const char* name;
     Type* return_type;
-    Typedapic_Field* params;
+    apic_TypedField* params;
     size_t num_params;
     const char* doc;
-} Typedapic_Function;
+} apic_TypedFunction;
 
-typedef struct Typed_MySimpleLib {
+typedef struct apic_TypedExports {
     const char* name;
     const char* doc;
 
@@ -137,19 +137,19 @@ typedef struct Typed_MySimpleLib {
     apic_EnumType** enums;
     size_t num_enums;
 
-    Typedapic_Function** functions;
+    apic_TypedFunction** functions;
     size_t num_functions;
 
-    Typedapic_Var** variables;
+    apic_TypedVar** variables;
     size_t num_variables;
 
-    Type** typedefs;
-    size_t num_typedefs;
-} Typed_MySimpleLib;
+    Type** aliases;
+    size_t num_aliases;
+} apic_TypedExports;
 
 
 void apic_ext_typecheck(apic_Exports* exports);
-void apic_ext_print_typed(Typed_MySimpleLib* tex);
+void apic_ext_print_typed(apic_TypedExports* tex);
 
 /* Helper function declarations */
 static PrimitiveType get_primitive_type(const char* type_str);
@@ -157,7 +157,7 @@ static Type* create_type(const char* name, TypeKind kind);
 static Type* resolve_type(apic_Exports* exports, const char* type_str);
 static Type* resolve_typedef(apic_Exports* exports, const char* name);
 static Type* resolve_struct_type(apic_Exports* exports, const char* name);
-Typed_MySimpleLib* apic_ext_create_typed_exports(apic_Exports* exports);
+apic_TypedExports* apic_ext_create_typed_exports(apic_Exports* exports);
 
 /* Implementation */
 static PrimitiveType get_primitive_type(const char* type_str) {
@@ -218,8 +218,8 @@ static Type* resolve_typedef(apic_Exports* exports, const char* name) {
     const char* stripped_name = STRIP_STRUCT_PREFIX(name);
 
     for (int i = 0; i < exports->typedef_count; i++) {
-        if (strcmp(exports->typedefs[i]->name, stripped_name) == 0) {
-            return resolve_type(exports, exports->typedefs[i]->type);
+        if (strcmp(exports->aliases[i]->name, stripped_name) == 0) {
+            return resolve_type(exports, exports->aliases[i]->type);
         }
     }
     return NULL;
@@ -249,7 +249,7 @@ static Type* resolve_type(apic_Exports* exports, const char* type_str) {
         }
     }
 
-    /* Check typedefs */
+    /* Check aliases */
     Type* tdef;
     if ((tdef = resolve_typedef(exports, type_str))) {
         tdef->qualifiers = qualifiers;
@@ -330,10 +330,10 @@ static Type* resolve_type(apic_Exports* exports, const char* type_str) {
     return t;
 }
 
-Typed_MySimpleLib* apic_ext_create_typed_exports(apic_Exports* exports) {
+apic_TypedExports* apic_ext_create_typed_exports(apic_Exports* exports) {
     if (!exports) return NULL;
 
-    Typed_MySimpleLib* tex = calloc(1, sizeof(Typed_MySimpleLib));
+    apic_TypedExports* tex = calloc(1, sizeof(apic_TypedExports));
     if (!tex) return NULL;
 
     tex->name = exports->name;
@@ -355,7 +355,7 @@ Typed_MySimpleLib* apic_ext_create_typed_exports(apic_Exports* exports) {
             stype->num_fields = st->count;
 
             if (st->count > 0) {
-                stype->fields = calloc(st->count, sizeof(Typedapic_Field));
+                stype->fields = calloc(st->count, sizeof(apic_TypedField));
                 if (!stype->fields) {
                     free(stype);
                     goto cleanup;
@@ -372,31 +372,31 @@ Typed_MySimpleLib* apic_ext_create_typed_exports(apic_Exports* exports) {
         }
     }
 
-    /* Convert typedefs */
-    tex->num_typedefs = exports->typedef_count;
-    if (tex->num_typedefs > 0) {
-        tex->typedefs = calloc(tex->num_typedefs, sizeof(Type*));
-        if (!tex->typedefs) goto cleanup;
+    /* Convert aliases */
+    tex->num_aliases = exports->typedef_count;
+    if (tex->num_aliases > 0) {
+        tex->aliases = calloc(tex->num_aliases, sizeof(Type*));
+        if (!tex->aliases) goto cleanup;
 
         for (int i = 0; i < exports->typedef_count; i++) {
-            apic_Typedef* td = exports->typedefs[i];
+            apic_Alias* td = exports->aliases[i];
             Type* t = create_type(td->name, TK_TYPEDEF);
             if (!t) goto cleanup;
 
             t->data.typedef_target = resolve_type(exports, td->type);
-            tex->typedefs[i] = t;
+            tex->aliases[i] = t;
         }
     }
 
     /* Convert functions */
     tex->num_functions = exports->func_count;
     if (tex->num_functions > 0) {
-        tex->functions = calloc(tex->num_functions, sizeof(Typedapic_Function*));
+        tex->functions = calloc(tex->num_functions, sizeof(apic_TypedFunction*));
         if (!tex->functions) goto cleanup;
 
         for (int i = 0; i < exports->func_count; i++) {
             apic_Func* fn = exports->funcs[i];
-            Typedapic_Function* tfn = calloc(1, sizeof(Typedapic_Function));
+            apic_TypedFunction* tfn = calloc(1, sizeof(apic_TypedFunction));
             if (!tfn) goto cleanup;
 
             tfn->name = fn->name;
@@ -405,7 +405,7 @@ Typed_MySimpleLib* apic_ext_create_typed_exports(apic_Exports* exports) {
             tfn->num_params = fn->count;
 
             if (fn->count > 0) {
-                tfn->params = calloc(fn->count, sizeof(Typedapic_Field));
+                tfn->params = calloc(fn->count, sizeof(apic_TypedField));
                 if (!tfn->params) {
                     free(tfn);
                     goto cleanup;
@@ -524,7 +524,7 @@ static void print_struct(apic_StructType* st, int indent) {
     if (st->doc) printf("%s  // %s\n", indent_str, st->doc);
 
     for (size_t i = 0; i < st->num_fields; i++) {
-        Typedapic_Field* f = &st->fields[i];
+        apic_TypedField* f = &st->fields[i];
         char type_buf[256];
         type_to_str(f->type, type_buf, sizeof(type_buf), indent + 1);
         printf("%s  %-20s %s", indent_str, type_buf, f->name);
@@ -542,7 +542,7 @@ static void print_enum(apic_EnumType* en, int indent) {
     if (en->doc) printf("%s  // %s\n", indent_str, en->doc);
 
     for (size_t i = 0; i < en->num_entries; i++) {
-        Typedapic_apic_EnumEntry* e = &en->entries[i];
+        apic_Typedapic_EnumEntry* e = &en->entries[i];
         printf("%s  %s = %d", indent_str, e->name, e->value);
         if (e->doc) printf("  // %s", e->doc);
         printf("\n");
@@ -550,17 +550,17 @@ static void print_enum(apic_EnumType* en, int indent) {
     printf("%s}\n\n", indent_str);
 }
 
-void apic_ext_print_typed(Typed_MySimpleLib* tex) {
+void apic_ext_print_typed(apic_TypedExports* tex) {
     if (!tex) return;
 
     printf("\n========== Typed API: %s ==========\n", tex->name);
     if (tex->doc) printf("// %s\n", tex->doc);
 
-    /* Print typedefs */
-    if (tex->num_typedefs > 0) {
-        printf("\napic_Typedefs (%zu):\n", tex->num_typedefs);
-        for (size_t i = 0; i < tex->num_typedefs; i++) {
-            Type* t = tex->typedefs[i];
+    /* Print aliases */
+    if (tex->num_aliases > 0) {
+        printf("\napic_Aliass (%zu):\n", tex->num_aliases);
+        for (size_t i = 0; i < tex->num_aliases; i++) {
+            Type* t = tex->aliases[i];
             char type_buf[256];
             type_to_str(t->data.typedef_target, type_buf, sizeof(type_buf), 0);
             printf("  typedef %-20s → %s\n", type_buf, t->name);
@@ -587,7 +587,7 @@ void apic_ext_print_typed(Typed_MySimpleLib* tex) {
     if (tex->num_functions > 0) {
         printf("\napic_Functions (%zu):\n", tex->num_functions);
         for (size_t i = 0; i < tex->num_functions; i++) {
-            Typedapic_Function* fn = tex->functions[i];
+            apic_TypedFunction* fn = tex->functions[i];
             char ret_buf[256];
             type_to_str(fn->return_type, ret_buf, sizeof(ret_buf), 0);
 
@@ -608,7 +608,7 @@ void apic_ext_print_typed(Typed_MySimpleLib* tex) {
     if (tex->num_variables > 0) {
         printf("\napic_Variables (%zu):\n", tex->num_variables);
         for (size_t i = 0; i < tex->num_variables; i++) {
-            Typedapic_Var* var = tex->variables[i];
+            apic_TypedVar* var = tex->variables[i];
             char type_buf[256];
             type_to_str(var->type, type_buf, sizeof(type_buf), 0);
             printf("  %-20s %s", type_buf, var->name);

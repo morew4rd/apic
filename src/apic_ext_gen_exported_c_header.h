@@ -13,11 +13,11 @@ static void __impl_ext_print_public_header(apic_Exports *exports, FILE *out) {
     fprintf(out, "#define %s_PUBLIC_H\n\n", exports->name);
     fprintf(out, "#include <stdint.h>\n\n");
 
-    // Print typedefs first
+    // Print aliases first
     if (exports->typedef_count > 0) {
-        fprintf(out, "/* =============== apic_Typedefs =============== */\n");
+        fprintf(out, "/* =============== apic_Aliass =============== */\n");
         for (int i = 0; i < exports->typedef_count; i++) {
-            apic_Typedef *t = exports->typedefs[i];
+            apic_Alias *t = exports->aliases[i];
             fprintf(out, "// %s\n", t->doc);
             fprintf(out, "typedef %s %s;\n\n", t->type, t->name);
         }
@@ -106,15 +106,6 @@ static void __impl_ext_print_public_header(apic_Exports *exports, FILE *out) {
         }
     }
 
-    // Print variables
-    if (exports->var_count > 0) {
-        fprintf(out, "/* ============= apic_Variables ============= */\n");
-        for (int i = 0; i < exports->var_count; i++) {
-            apic_Var *v = exports->vars[i];
-            fprintf(out, "// %s\n", v->doc);
-            fprintf(out, "extern %s %s;\n\n", v->type, v->name);
-        }
-    }
 
     // Print functions
     if (exports->func_count > 0) {

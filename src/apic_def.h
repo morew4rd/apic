@@ -1,7 +1,7 @@
 #ifndef APIC_DEF_H
 #define APIC_DEF_H
 
-#ifdef APIC_SHORTCUTS
+#ifdef APIC_DEFINE_SHORTCUTS
 #define F_       APIC_FIELD_
 #define F        APIC_FIELD
 #define FA       APIC_FIELD_ARRAY
@@ -34,12 +34,12 @@
 #define ENUMS    APIC_ENUMS
 #define FUNCS    APIC_FUNCS
 #define FUNCPTRS APIC_FUNCPTRS
-#define TYPEDEFS APIC_TYPEDEFS
+#define ALIASES  APIC_ALIASES
 
-#define EXPORTS_ APIC_EXPORTS_
-#define EXPORTS  APIC_EXPORTS
+#define EXPORTS_ APIC_PUBLIC_EXPORTS_
+#define EXPORTS  APIC_PUBLIC_EXPORTS
 
-#endif // APIC_SHORTCUTS
+#endif // APIC_DEFINE_SHORTCUTS
 
 
 #ifndef APIC_REFLECT
@@ -84,15 +84,15 @@
 #define APIC_ENUM(name, ...) APIC_ENUM_(name, "", __VA_ARGS__)
 
 /* --------------- apic_Exports Macros --------------- */
-#define APIC_EXPORTS_(...)
-#define APIC_EXPORTS(...)
+#define APIC_PUBLIC_EXPORTS_(...)
+#define APIC_PUBLIC_EXPORTS(...)
 
 #define APIC_STRUCTS(...)
 #define APIC_UNIONS(...)
 #define APIC_FUNCS(...)
 #define APIC_FUNCPTRS(...)
 #define APIC_ENUMS(...)
-#define APIC_TYPEDEFS(...)
+#define APIC_ALIASES(...)
 
 
 // apic_Argument counting (supports up to 32 arguments)
@@ -148,8 +148,7 @@
 
 /* ----------------- Reflection Mode ---------------- */
 typedef struct apic_Field { const char *name, *type, *doc; } apic_Field;
-typedef struct apic_Var { const char *kind; const char *name, *type, *doc; } apic_Var;
-typedef struct apic_Typedef { const char *kind; const char *name, *type, *doc; } apic_Typedef;
+typedef struct apic_Alias { const char *kind; const char *name, *type, *doc; } apic_Alias;
 typedef struct apic_Struct { const char *kind; const char *name, *doc; apic_Field *fields; int count; } apic_Struct;
 typedef struct apic_Union { const char *kind; const char *name, *doc; apic_Field *fields; int count; } apic_Union;
 typedef struct apic_Arg { const char *name, *type, *doc; } apic_Arg;
@@ -164,14 +163,12 @@ typedef struct apic_Exports {
     apic_Func **funcs;
     apic_FuncPtr **funcptrs;
     apic_Enum **enums;
-    apic_Var **vars;
-    apic_Typedef **typedefs;
+    apic_Alias **aliases;
     int struct_count;
     int union_count;
     int func_count;
     int funcptr_count;
     int enum_count;
-    int var_count;
     int typedef_count;
 } apic_Exports;
 
@@ -182,8 +179,8 @@ typedef struct apic_Exports {
 #define APIC_FIELD_ARRAY_(n,t,c,d) {#n, #t "[" #c "]", d}
 #define APIC_FIELD_ARRAY(n,t,c) APIC_FIELD_ARRAY_(n,t,c, "")
 
-/* ---------------- apic_Typedef Macros ---------------- */
-#define APIC_ALIAS_(n,t,d) static apic_Typedef n = {"typedef", #n, #t, d}
+/* ---------------- apic_Alias Macros ---------------- */
+#define APIC_ALIAS_(n,t,d) static apic_Alias n = {"typedef", #n, #t, d}
 #define APIC_ALIAS(n,t) APIC_ALIAS_(n,t, "")
 
 /* ---------------- apic_Argument Macros --------------- */
@@ -233,10 +230,10 @@ typedef struct apic_Exports {
 #define APIC_FUNCS(...) .funcs = (apic_Func*[]){__VA_ARGS__}, .func_count = sizeof((apic_Func*[]){__VA_ARGS__})/sizeof(apic_Func*)
 #define APIC_FUNCPTRS(...) .funcptrs = (apic_FuncPtr*[]){__VA_ARGS__}, .funcptr_count = sizeof((apic_FuncPtr*[]){__VA_ARGS__})/sizeof(apic_FuncPtr*)
 #define APIC_ENUMS(...) .enums = (apic_Enum*[]){__VA_ARGS__}, .enum_count = sizeof((apic_Enum*[]){__VA_ARGS__})/sizeof(apic_Enum*)
-#define APIC_TYPEDEFS(...) .typedefs = (apic_Typedef*[]){__VA_ARGS__}, .typedef_count = sizeof((apic_Typedef*[]){__VA_ARGS__})/sizeof(apic_Typedef*)
+#define APIC_ALIASES(...) .aliases = (apic_Alias*[]){__VA_ARGS__}, .typedef_count = sizeof((apic_Alias*[]){__VA_ARGS__})/sizeof(apic_Alias*)
 
-#define APIC_EXPORTS_(n, d, ...) apic_Exports n = {.name = #n, .doc = d, __VA_ARGS__}
-#define APIC_EXPORTS(n, ...) APIC_EXPORTS_(n, "", __VA_ARGS__)
+#define APIC_PUBLIC_EXPORTS_(n, d, ...) apic_Exports n = {.name = #n, .doc = d, __VA_ARGS__}
+#define APIC_PUBLIC_EXPORTS(n, ...) APIC_PUBLIC_EXPORTS_(n, "", __VA_ARGS__)
 
 #endif // APIC_REFLECT
 

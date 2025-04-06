@@ -192,23 +192,6 @@ static void apic_ext_gen_lua51_bindings(apic_Exports *exports, FILE *out) {
     }
     fprintf(out, "}\n\n");
 
-    // Global variables
-    fprintf(out, "static void register_vars(lua_State *L) {\n");
-    for (int i = 0; i < exports->var_count; i++) {
-        apic_Var *v = exports->vars[i];
-        if (is_integer_type(v->type)) {
-            fprintf(out, "    lua_pushinteger(L, %s);\n", v->name);
-        } else if (is_float_type(v->type)) {
-            fprintf(out, "    lua_pushnumber(L, %s);\n", v->name);
-        } else if (is_string_type(v->type)) {
-            fprintf(out, "    lua_pushstring(L, %s);\n", v->name);
-        } else {
-            fprintf(out, "    %s *ptr = &%s;\n", v->type, v->name);
-            fprintf(out, "    lua_pushlightuserdata(L, ptr);\n");
-        }
-        fprintf(out, "    lua_setglobal(L, \"%s\");\n", v->name);
-    }
-    fprintf(out, "}\n\n");
 
     // Main registration
     fprintf(out, "int luaopen_%s(lua_State *L) {\n", exports->name);
