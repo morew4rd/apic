@@ -1,6 +1,47 @@
 #ifndef APIC_DEF_H
 #define APIC_DEF_H
 
+#ifdef APIC_SHORTCUTS
+#define F_       APIC_FIELD_
+#define F        APIC_FIELD
+#define FA       APIC_FIELD_ARRAY
+#define FA_      APIC_FIELD_ARRAY_
+#define A_       APIC_ARG_
+#define A        APIC_ARG
+#define N_       APIC_ENUMENTRY_
+#define N        APIC_ENUMENTRY
+
+#define STRUCT_  APIC_STRUCT_
+#define STRUCT   APIC_STRUCT
+#define UNION_   APIC_UNION_
+#define UNION    APIC_UNION
+#define ENUM_    APIC_ENUM_
+#define ENUM     APIC_ENUM
+
+#define FUNC_    APIC_FUNC_
+#define FUNC     APIC_FUNC
+
+#define ALIAS_   APIC_ALIAS_
+#define ALIAS    APIC_ALIAS
+
+#define PTR      APIC_PTR
+
+#define LAMBDA_  APIC_LAMBDA_
+#define LAMBDA   APIC_LAMBDA
+
+#define STRUCTS  APIC_STRUCTS
+#define UNIONS   APIC_UNIONS
+#define ENUMS    APIC_ENUMS
+#define FUNCS    APIC_FUNCS
+#define LAMBDAS  APIC_LAMBDAS
+#define TYPEDEFS APIC_TYPEDEFS
+
+#define EXPORTS_ APIC_EXPORTS_
+#define EXPORTS  APIC_EXPORTS
+
+#endif // APIC_SHORTCUTS
+
+
 #ifdef APIC_REFLECT
 /* ----------------- Reflection Mode ---------------- */
 typedef struct Field { const char *name, *type, *doc; } Field;
@@ -33,164 +74,165 @@ typedef struct Exports {
 
 
 /* ----------------- Field Macros ----------------- */
-#define F_(n,t,d) {#n, #t, d}
-#define F(n,t) F_(n,t, "")
-#define FA_(n,t,c,d) {#n, #t "[" #c "]", d}
-#define FA(n,t,c) FA_(n,t,c, "")
+#define APIC_FIELD_(n,t,d) {#n, #t, d}
+#define APIC_FIELD(n,t) APIC_FIELD_(n,t, "")
+#define APIC_FIELD_ARRAY_(n,t,c,d) {#n, #t "[" #c "]", d}
+#define APIC_FIELD_ARRAY(n,t,c) APIC_FIELD_ARRAY_(n,t,c, "")
 
 /* ---------------- Typedef Macros ---------------- */
-#define ALIAS_(n,t,d) static Typedef n = {"typedef", #n, #t, d}
-#define ALIAS(n,t) ALIAS_(n,t, "")
+#define APIC_ALIAS_(n,t,d) static Typedef n = {"typedef", #n, #t, d}
+#define APIC_ALIAS(n,t) APIC_ALIAS_(n,t, "")
 
 /* ---------------- Argument Macros --------------- */
-#define A_(n,t,d) {#n, #t, d}
-#define A(n,t) A_(n,t, "")
+#define APIC_ARG_(n,t,d) {#n, #t, d}
+#define APIC_ARG(n,t) APIC_ARG_(n,t, "")
 
 /* ---------------- Enum Value Macros -------------- */
-#define N_(n,v,s,d) {#n, v, s, d}
-#define N(n,v,s) N_(n,v,s, "")
+#define APIC_ENUMENTRY_(n,v,s,d) {#n, v, s, d}
+#define APIC_ENUMENTRY(n,v,s) APIC_ENUMENTRY_(n,v,s, "")
 
 /* --------------- Pointer Helpers --------------- */
-#define PTR(TYPE) TYPE*
+#define APIC_PTR(TYPE) TYPE*
 
 /* ------------------ Struct Macros ----------------- */
-#define STRUCT_(name, docstr, ...) \
+#define APIC_STRUCT_(name, docstr, ...) \
     static Field name##_fields[] = {__VA_ARGS__}; \
     Struct name = {"struct", #name, docstr, name##_fields, sizeof(name##_fields)/sizeof(Field)}
-#define STRUCT(name, ...) STRUCT_(name, "", __VA_ARGS__)
+#define APIC_STRUCT(name, ...) APIC_STRUCT_(name, "", __VA_ARGS__)
 
 /* ------------------ Union Macros ------------------ */
-#define UNION_(name, docstr, ...) \
+#define APIC_UNION_(name, docstr, ...) \
     static Field name##_fields[] = {__VA_ARGS__}; \
     Union name = {"union", #name, docstr, name##_fields, sizeof(name##_fields)/sizeof(Field)}
-#define UNION(name, ...) UNION_(name, "", __VA_ARGS__)
+#define APIC_UNION(name, ...) APIC_UNION_(name, "", __VA_ARGS__)
 
 /* ---------------- Function Macros ---------------- */
-#define FUNC_(name, docstr, ret, ...) \
+#define APIC_FUNC_(name, docstr, ret, ...) \
     static Arg name##_args[] = {__VA_ARGS__}; \
     Func name = {"function", #name, docstr, #ret, name##_args, sizeof(name##_args)/sizeof(Arg)}
-#define FUNC(name, ret, ...) FUNC_(name, "", ret, __VA_ARGS__)
+#define APIC_FUNC(name, ret, ...) APIC_FUNC_(name, "", ret, __VA_ARGS__)
 
 /* ----------------- Lambda Macros ----------------- */
-#define LAMBDA_(name, docstr, ret, ...) \
+#define APIC_LAMBDA_(name, docstr, ret, ...) \
     static Arg name##_args[] = {__VA_ARGS__}; \
     Lambda name = {"lambda", #name, docstr, #ret, name##_args, sizeof(name##_args)/sizeof(Arg)}
-#define LAMBDA(name, ret, ...) LAMBDA_(name, "", ret, __VA_ARGS__)
+#define APIC_LAMBDA(name, ret, ...) APIC_LAMBDA_(name, "", ret, __VA_ARGS__)
 
 /* ------------------ Enum Macros ------------------ */
-#define ENUM_(name, docstr, ...) \
+#define APIC_ENUM_(name, docstr, ...) \
     static EnumEntry name##_entries[] = {__VA_ARGS__}; \
     Enum name = {#name, docstr, name##_entries, sizeof(name##_entries)/sizeof(EnumEntry)}
-#define ENUM(name, ...) ENUM_(name, "", __VA_ARGS__)
+#define APIC_ENUM(name, ...) APIC_ENUM_(name, "", __VA_ARGS__)
 
 /* --------------- Exports Macros --------------- */
-#define STRUCTS(...) .structs = (Struct*[]){__VA_ARGS__}, .struct_count = sizeof((Struct*[]){__VA_ARGS__})/sizeof(Struct*)
-#define UNIONS(...) .unions = (Union*[]){__VA_ARGS__}, .union_count = sizeof((Union*[]){__VA_ARGS__})/sizeof(Union*)
-#define FUNCS(...) .funcs = (Func*[]){__VA_ARGS__}, .func_count = sizeof((Func*[]){__VA_ARGS__})/sizeof(Func*)
-#define LAMBDAS(...) .lambdas = (Lambda*[]){__VA_ARGS__}, .lambda_count = sizeof((Lambda*[]){__VA_ARGS__})/sizeof(Lambda*)
-#define ENUMS(...) .enums = (Enum*[]){__VA_ARGS__}, .enum_count = sizeof((Enum*[]){__VA_ARGS__})/sizeof(Enum*)
-#define TYPEDEFS(...) .typedefs = (Typedef*[]){__VA_ARGS__}, .typedef_count = sizeof((Typedef*[]){__VA_ARGS__})/sizeof(Typedef*)
+#define APIC_STRUCTS(...) .structs = (Struct*[]){__VA_ARGS__}, .struct_count = sizeof((Struct*[]){__VA_ARGS__})/sizeof(Struct*)
+#define APIC_UNIONS(...) .unions = (Union*[]){__VA_ARGS__}, .union_count = sizeof((Union*[]){__VA_ARGS__})/sizeof(Union*)
+#define APIC_FUNCS(...) .funcs = (Func*[]){__VA_ARGS__}, .func_count = sizeof((Func*[]){__VA_ARGS__})/sizeof(Func*)
+#define APIC_LAMBDAS(...) .lambdas = (Lambda*[]){__VA_ARGS__}, .lambda_count = sizeof((Lambda*[]){__VA_ARGS__})/sizeof(Lambda*)
+#define APIC_ENUMS(...) .enums = (Enum*[]){__VA_ARGS__}, .enum_count = sizeof((Enum*[]){__VA_ARGS__})/sizeof(Enum*)
+#define APIC_TYPEDEFS(...) .typedefs = (Typedef*[]){__VA_ARGS__}, .typedef_count = sizeof((Typedef*[]){__VA_ARGS__})/sizeof(Typedef*)
 
-#define EXPORTS_(n, d, ...) Exports n = {.name = #n, .doc = d, __VA_ARGS__}
-#define EXPORTS(n, ...) EXPORTS_(n, "", __VA_ARGS__)
+#define APIC_EXPORTS_(n, d, ...) Exports n = {.name = #n, .doc = d, __VA_ARGS__}
+#define APIC_EXPORTS(n, ...) APIC_EXPORTS_(n, "", __VA_ARGS__)
 
-#else // APIC_REFLECT
+#else // !APIC_REFLECT
+
 /* ----------------- Header Mode ---------------- */
 // Argument counting (supports up to 32 arguments)
-#define COUNT_ARGS(...) COUNT_ARGS_IMPL(__VA_ARGS__,\
+#define _APIC_COUNT_ARGS(...) _APIC_COUNT_ARGS_IMPL(__VA_ARGS__,\
     32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,\
     15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)
-    #define COUNT_ARGS_IMPL(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,\
+    #define _APIC_COUNT_ARGS_IMPL(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,\
     _11,_12,_13,_14,_15,_16,_17,_18,_19,_20,_21,_22,_23,_24,\
     _25,_26,_27,_28,_29,_30,_31,_32,N,...) N
 
     // Helper for macro expansion
-    #define CONCAT(a,b) a##b
-    #define CONCAT_FIELDS_IMPL(N, ...) CONCAT(CONCAT_FIELDS_, N)(__VA_ARGS__)
-    #define CONCAT_FIELDS(...) CONCAT_FIELDS_IMPL(COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)
+    #define _APIC_CONCAT(a,b) a##b
+    #define _APIC_CONCAT_FIELDS_IMPL(N, ...) _APIC_CONCAT(_APIC_CONCAT_FIELDS_, N)(__VA_ARGS__)
+    #define _APIC_CONCAT_FIELDS(...) _APIC_CONCAT_FIELDS_IMPL(_APIC_COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)
 
     // Field concatenators (up to 32 fields)
-    #define CONCAT_FIELDS_0()
-    #define CONCAT_FIELDS_1(a) a
-    #define CONCAT_FIELDS_2(a,b) a b
-    #define CONCAT_FIELDS_3(a,b,c) a b c
-    #define CONCAT_FIELDS_4(a,b,c,d) a b c d
-    #define CONCAT_FIELDS_5(a,b,c,d,e) a b c d e
-    #define CONCAT_FIELDS_6(a,b,c,d,e,f) a b c d e f
-    #define CONCAT_FIELDS_7(a,b,c,d,e,f,g) a b c d e f g
-    #define CONCAT_FIELDS_8(a,b,c,d,e,f,g,h) a b c d e f g h
-    #define CONCAT_FIELDS_9(a,b,c,d,e,f,g,h,i) a b c d e f g h i
-    #define CONCAT_FIELDS_10(a,b,c,d,e,f,g,h,i,j) a b c d e f g h i j
-    #define CONCAT_FIELDS_11(a,b,c,d,e,f,g,h,i,j,k) a b c d e f g h i j k
-    #define CONCAT_FIELDS_12(a,b,c,d,e,f,g,h,i,j,k,l) a b c d e f g h i j k l
-    #define CONCAT_FIELDS_13(a,b,c,d,e,f,g,h,i,j,k,l,m) a b c d e f g h i j k l m
-    #define CONCAT_FIELDS_14(a,b,c,d,e,f,g,h,i,j,k,l,m,n) a b c d e f g h i j k l m n
-    #define CONCAT_FIELDS_15(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o) a b c d e f g h i j k l m n o
-    #define CONCAT_FIELDS_16(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p) a b c d e f g h i j k l m n o p
-    #define CONCAT_FIELDS_17(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q) a b c d e f g h i j k l m n o p q
-    #define CONCAT_FIELDS_18(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r) a b c d e f g h i j k l m n o p q r
-    #define CONCAT_FIELDS_19(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s) a b c d e f g h i j k l m n o p q r s
-    #define CONCAT_FIELDS_20(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t) a b c d e f g h i j k l m n o p q r s t
-    #define CONCAT_FIELDS_21(a,...) a CONCAT_FIELDS_20(__VA_ARGS__)
-    #define CONCAT_FIELDS_22(a,...) a CONCAT_FIELDS_21(__VA_ARGS__)
-    #define CONCAT_FIELDS_23(a,...) a CONCAT_FIELDS_22(__VA_ARGS__)
-    #define CONCAT_FIELDS_24(a,...) a CONCAT_FIELDS_23(__VA_ARGS__)
-    #define CONCAT_FIELDS_25(a,...) a CONCAT_FIELDS_24(__VA_ARGS__)
-    #define CONCAT_FIELDS_26(a,...) a CONCAT_FIELDS_25(__VA_ARGS__)
-    #define CONCAT_FIELDS_27(a,...) a CONCAT_FIELDS_26(__VA_ARGS__)
-    #define CONCAT_FIELDS_28(a,...) a CONCAT_FIELDS_27(__VA_ARGS__)
-    #define CONCAT_FIELDS_29(a,...) a CONCAT_FIELDS_28(__VA_ARGS__)
-    #define CONCAT_FIELDS_30(a,...) a CONCAT_FIELDS_29(__VA_ARGS__)
-    #define CONCAT_FIELDS_31(a,...) a CONCAT_FIELDS_30(__VA_ARGS__)
-    #define CONCAT_FIELDS_32(a,...) a CONCAT_FIELDS_31(__VA_ARGS__)
+    #define _APIC_CONCAT_FIELDS_0()
+    #define _APIC_CONCAT_FIELDS_1(a) a
+    #define _APIC_CONCAT_FIELDS_2(a,b) a b
+    #define _APIC_CONCAT_FIELDS_3(a,b,c) a b c
+    #define _APIC_CONCAT_FIELDS_4(a,b,c,d) a b c d
+    #define _APIC_CONCAT_FIELDS_5(a,b,c,d,e) a b c d e
+    #define _APIC_CONCAT_FIELDS_6(a,b,c,d,e,f) a b c d e f
+    #define _APIC_CONCAT_FIELDS_7(a,b,c,d,e,f,g) a b c d e f g
+    #define _APIC_CONCAT_FIELDS_8(a,b,c,d,e,f,g,h) a b c d e f g h
+    #define _APIC_CONCAT_FIELDS_9(a,b,c,d,e,f,g,h,i) a b c d e f g h i
+    #define _APIC_CONCAT_FIELDS_10(a,b,c,d,e,f,g,h,i,j) a b c d e f g h i j
+    #define _APIC_CONCAT_FIELDS_11(a,b,c,d,e,f,g,h,i,j,k) a b c d e f g h i j k
+    #define _APIC_CONCAT_FIELDS_12(a,b,c,d,e,f,g,h,i,j,k,l) a b c d e f g h i j k l
+    #define _APIC_CONCAT_FIELDS_13(a,b,c,d,e,f,g,h,i,j,k,l,m) a b c d e f g h i j k l m
+    #define _APIC_CONCAT_FIELDS_14(a,b,c,d,e,f,g,h,i,j,k,l,m,n) a b c d e f g h i j k l m n
+    #define _APIC_CONCAT_FIELDS_15(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o) a b c d e f g h i j k l m n o
+    #define _APIC_CONCAT_FIELDS_16(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p) a b c d e f g h i j k l m n o p
+    #define _APIC_CONCAT_FIELDS_17(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q) a b c d e f g h i j k l m n o p q
+    #define _APIC_CONCAT_FIELDS_18(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r) a b c d e f g h i j k l m n o p q r
+    #define _APIC_CONCAT_FIELDS_19(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s) a b c d e f g h i j k l m n o p q r s
+    #define _APIC_CONCAT_FIELDS_20(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t) a b c d e f g h i j k l m n o p q r s t
+    #define _APIC_CONCAT_FIELDS_21(a,...) a _APIC_CONCAT_FIELDS_20(__VA_ARGS__)
+    #define _APIC_CONCAT_FIELDS_22(a,...) a _APIC_CONCAT_FIELDS_21(__VA_ARGS__)
+    #define _APIC_CONCAT_FIELDS_23(a,...) a _APIC_CONCAT_FIELDS_22(__VA_ARGS__)
+    #define _APIC_CONCAT_FIELDS_24(a,...) a _APIC_CONCAT_FIELDS_23(__VA_ARGS__)
+    #define _APIC_CONCAT_FIELDS_25(a,...) a _APIC_CONCAT_FIELDS_24(__VA_ARGS__)
+    #define _APIC_CONCAT_FIELDS_26(a,...) a _APIC_CONCAT_FIELDS_25(__VA_ARGS__)
+    #define _APIC_CONCAT_FIELDS_27(a,...) a _APIC_CONCAT_FIELDS_26(__VA_ARGS__)
+    #define _APIC_CONCAT_FIELDS_28(a,...) a _APIC_CONCAT_FIELDS_27(__VA_ARGS__)
+    #define _APIC_CONCAT_FIELDS_29(a,...) a _APIC_CONCAT_FIELDS_28(__VA_ARGS__)
+    #define _APIC_CONCAT_FIELDS_30(a,...) a _APIC_CONCAT_FIELDS_29(__VA_ARGS__)
+    #define _APIC_CONCAT_FIELDS_31(a,...) a _APIC_CONCAT_FIELDS_30(__VA_ARGS__)
+    #define _APIC_CONCAT_FIELDS_32(a,...) a _APIC_CONCAT_FIELDS_31(__VA_ARGS__)
 
 // Definition macros
-#define F_(name, type, doc) type name;
-#define F(name, type) F_(name, type, "")
-#define FA_(name, type, count, doc) type name[count];
-#define FA(name, type, count) FA_(name, type, count, "")
-#define ALIAS_(name, type, doc) typedef type name;
-#define ALIAS(name, type) ALIAS_(name, type, "")
-#define A_(name, type, doc) type name
-#define A(name, type) A_(name, type, "")
-#define N_(n,v,s,doc) n = v
-#define N(n,v,s) N_(n,v,s,"")
+#define APIC_FIELD_(name, type, doc) type name;
+#define APIC_FIELD(name, type) APIC_FIELD_(name, type, "")
+#define APIC_FIELD_ARRAY_(name, type, count, doc) type name[count];
+#define APIC_FIELD_ARRAY(name, type, count) APIC_FIELD_ARRAY_(name, type, count, "")
+#define APIC_ALIAS_(name, type, doc) typedef type name;
+#define APIC_ALIAS(name, type) APIC_ALIAS_(name, type, "")
+#define APIC_ARG_(name, type, doc) type name
+#define APIC_ARG(name, type) APIC_ARG_(name, type, "")
+#define APIC_ENUMENTRY_(n,v,s,doc) n = v
+#define APIC_ENUMENTRY(n,v,s) APIC_ENUMENTRY_(n,v,s,"")
 
 /* --------------- Pointer Helpers --------------- */
-#define PTR(TYPE) TYPE*
+#define APIC_PTR(TYPE) TYPE*
 
 /* ------------------ Struct Macros ----------------- */
-#define STRUCT_(name, docstr, ...) \
-    typedef struct name { CONCAT_FIELDS(__VA_ARGS__) } name
-#define STRUCT(name, ...) STRUCT_(name, "", __VA_ARGS__)
+#define APIC_STRUCT_(name, docstr, ...) \
+    typedef struct name { _APIC_CONCAT_FIELDS(__VA_ARGS__) } name
+#define APIC_STRUCT(name, ...) APIC_STRUCT_(name, "", __VA_ARGS__)
 
 /* ------------------ Union Macros ------------------ */
-#define UNION_(name, docstr, ...) \
-    typedef union name { CONCAT_FIELDS(__VA_ARGS__) } name
-#define UNION(name, ...) UNION_(name, "", __VA_ARGS__)
+#define APIC_UNION_(name, docstr, ...) \
+    typedef union name { _APIC_CONCAT_FIELDS(__VA_ARGS__) } name
+#define APIC_UNION(name, ...) APIC_UNION_(name, "", __VA_ARGS__)
 
 /* ---------------- Function Macros ---------------- */
-#define FUNC_(name, docstr, ret, ...) ret name(__VA_ARGS__)
-#define FUNC(name, ret, ...) FUNC_(name, "", ret, __VA_ARGS__)
+#define APIC_FUNC_(name, docstr, ret, ...) ret name(__VA_ARGS__)
+#define APIC_FUNC(name, ret, ...) APIC_FUNC_(name, "", ret, __VA_ARGS__)
 
 /* ----------------- Lambda Macros ----------------- */
-#define LAMBDA_(name, docstr, ret, ...) typedef ret (*name)(__VA_ARGS__)
-#define LAMBDA(name, ret, ...) LAMBDA_(name, "", ret, __VA_ARGS__)
+#define APIC_LAMBDA_(name, docstr, ret, ...) typedef ret (*name)(__VA_ARGS__)
+#define APIC_LAMBDA(name, ret, ...) APIC_LAMBDA_(name, "", ret, __VA_ARGS__)
 
 /* ------------------ Enum Macros ------------------ */
-#define ENUM_(name, docstr, ...) typedef enum name { __VA_ARGS__ } name
-#define ENUM(name, ...) ENUM_(name, "", __VA_ARGS__)
+#define APIC_ENUM_(name, docstr, ...) typedef enum name { __VA_ARGS__ } name
+#define APIC_ENUM(name, ...) APIC_ENUM_(name, "", __VA_ARGS__)
 
 /* --------------- Exports Macros --------------- */
-#define EXPORTS_(...)
-#define EXPORTS(...)
+#define APIC_EXPORTS_(...)
+#define APIC_EXPORTS(...)
 
-#define STRUCTS(...)
-#define UNIONS(...)
-#define FUNCS(...)
-#define LAMBDAS(...)
-#define ENUMS(...)
-#define TYPEDEFS(...)
+#define APIC_STRUCTS(...)
+#define APIC_UNIONS(...)
+#define APIC_FUNCS(...)
+#define APIC_LAMBDAS(...)
+#define APIC_ENUMS(...)
+#define APIC_TYPEDEFS(...)
 
 #endif // APIC_REFLECT
 

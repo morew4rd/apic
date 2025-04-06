@@ -1,3 +1,4 @@
+#define APIC_SHORTCUTS
 #include "../../src/apic.h"
 
 STRUCT(Vec2I,
