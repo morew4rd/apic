@@ -31,6 +31,7 @@ typedef struct Exports {
     int typedef_count;
 } Exports;
 
+
 /* ----------------- Field Macros ----------------- */
 #define F_(n,t,d) {#n, #t, d}
 #define F(n,t) F_(n,t, "")
@@ -42,8 +43,8 @@ typedef struct Exports {
 #define VAR(n,t) VAR_(n,t, "")
 
 /* ---------------- Typedef Macros ---------------- */
-#define TDEF_(n,t,d) static Typedef n = {"typedef", #n, #t, d}
-#define TDEF(n,t) TDEF_(n,t, "")
+#define ALIAS_(n,t,d) static Typedef n = {"typedef", #n, #t, d}
+#define ALIAS(n,t) ALIAS_(n,t, "")
 
 /* ---------------- Argument Macros --------------- */
 #define A_(n,t,d) {#n, #t, d}
@@ -52,6 +53,9 @@ typedef struct Exports {
 /* ---------------- Enum Value Macros -------------- */
 #define N_(n,v,s,d) {#n, v, s, d}
 #define N(n,v,s) N_(n,v,s, "")
+
+/* --------------- Pointer Helpers --------------- */
+#define PTR(TYPE) TYPE*
 
 /* ------------------ Struct Macros ----------------- */
 #define STRUCT_(name, docstr, ...) \
@@ -82,9 +86,6 @@ typedef struct Exports {
     static EnumEntry name##_entries[] = {__VA_ARGS__}; \
     Enum name = {#name, docstr, name##_entries, sizeof(name##_entries)/sizeof(EnumEntry)}
 #define ENUM(name, ...) ENUM_(name, "", __VA_ARGS__)
-
-/* --------------- Pointer Helpers --------------- */
-#define PTR(TYPE) TYPE*
 
 /* --------------- Exports Macros --------------- */
 #define STRUCTS(...) .structs = (Struct*[]){__VA_ARGS__}, .struct_count = sizeof((Struct*[]){__VA_ARGS__})/sizeof(Struct*)
@@ -148,15 +149,15 @@ typedef struct Exports {
     #define CONCAT_FIELDS_31(a,...) a CONCAT_FIELDS_30(__VA_ARGS__)
     #define CONCAT_FIELDS_32(a,...) a CONCAT_FIELDS_31(__VA_ARGS__)
 
-// Definition macros (ignore docs)
+// Definition macros
 #define F_(name, type, doc) type name;
 #define F(name, type) F_(name, type, "")
 #define FA_(name, type, count, doc) type name[count];
 #define FA(name, type, count) FA_(name, type, count, "")
 #define VAR_(name, type, doc) type name;
 #define VAR(name, type) VAR_(name, type, "")
-#define TDEF_(name, type, doc) typedef type name;
-#define TDEF(name, type) TDEF_(name, type, "")
+#define ALIAS_(name, type, doc) typedef type name;
+#define ALIAS(name, type) ALIAS_(name, type, "")
 #define A_(name, type, doc) type name
 #define A(name, type) A_(name, type, "")
 #define N_(n,v,s,doc) n = v

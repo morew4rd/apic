@@ -37,7 +37,7 @@ VAR_(app_name, const char*, "Application name");
 VAR_(max_connections, int, "Maximum allowed connections");
 
 // Typedef examples
-TDEF_(Byte, unsigned char, "Single byte type");
+ALIAS_(Byte, unsigned char, "Single byte type");
 
 FUNC_(add_mixed, "Adds int and float", int,
     A(a, int),
