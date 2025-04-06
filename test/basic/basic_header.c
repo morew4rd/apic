@@ -12,11 +12,6 @@ int main() {
     Byte byte = 255;
     printf("Byte value: %u\n", byte);
 
-    // Using global var
-    app_name = "MyApp";
-    printf("Application name: %s\n", app_name);
-
-
     Buffer buf = {.data = {0}, .size = 0};
     Matrix mat = {.values = {1.0f}, .rows = 4, .cols = 4};
 

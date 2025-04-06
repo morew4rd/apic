@@ -82,13 +82,6 @@ typedef union Number {
 // Adds int and float
 typedef int (*Adder)(int a, float b);
 
-/* ============= Variables ============= */
-// Application name
-extern const char* app_name;
-
-// Maximum allowed connections
-extern int max_connections;
-
 /* ============= Functions ============= */
 // Adds int and float
 int add_mixed(int a, float b);
@@ -166,9 +159,7 @@ Entries (3):
   GREEN = 1 (green, Secondary color)
   BLUE = 2 (blue, Primary color)
 
-=== Variables (2) ===
-app_name: const char* (Application name)
-max_connections: int (Maximum allowed connections)
+=== Variables (0) ===
 
 === Typedefs (1) ===
 Byte = unsigned char (Single byte type)

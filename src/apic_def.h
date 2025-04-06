@@ -38,10 +38,6 @@ typedef struct Exports {
 #define FA_(n,t,c,d) {#n, #t "[" #c "]", d}
 #define FA(n,t,c) FA_(n,t,c, "")
 
-/* ---------------- Variable Macros ---------------- */
-#define VAR_(n,t,d) static Var n = {"var", #n, #t, d}
-#define VAR(n,t) VAR_(n,t, "")
-
 /* ---------------- Typedef Macros ---------------- */
 #define ALIAS_(n,t,d) static Typedef n = {"typedef", #n, #t, d}
 #define ALIAS(n,t) ALIAS_(n,t, "")
@@ -93,7 +89,6 @@ typedef struct Exports {
 #define FUNCS(...) .funcs = (Func*[]){__VA_ARGS__}, .func_count = sizeof((Func*[]){__VA_ARGS__})/sizeof(Func*)
 #define LAMBDAS(...) .lambdas = (Lambda*[]){__VA_ARGS__}, .lambda_count = sizeof((Lambda*[]){__VA_ARGS__})/sizeof(Lambda*)
 #define ENUMS(...) .enums = (Enum*[]){__VA_ARGS__}, .enum_count = sizeof((Enum*[]){__VA_ARGS__})/sizeof(Enum*)
-#define VARS(...) .vars = (Var*[]){__VA_ARGS__}, .var_count = sizeof((Var*[]){__VA_ARGS__})/sizeof(Var*)
 #define TYPEDEFS(...) .typedefs = (Typedef*[]){__VA_ARGS__}, .typedef_count = sizeof((Typedef*[]){__VA_ARGS__})/sizeof(Typedef*)
 
 #define EXPORTS_(n, d, ...) Exports n = {.name = #n, .doc = d, __VA_ARGS__}
@@ -154,8 +149,6 @@ typedef struct Exports {
 #define F(name, type) F_(name, type, "")
 #define FA_(name, type, count, doc) type name[count];
 #define FA(name, type, count) FA_(name, type, count, "")
-#define VAR_(name, type, doc) type name;
-#define VAR(name, type) VAR_(name, type, "")
 #define ALIAS_(name, type, doc) typedef type name;
 #define ALIAS(name, type) ALIAS_(name, type, "")
 #define A_(name, type, doc) type name
@@ -197,7 +190,6 @@ typedef struct Exports {
 #define FUNCS(...)
 #define LAMBDAS(...)
 #define ENUMS(...)
-#define VARS(...)
 #define TYPEDEFS(...)
 
 #endif // APIC_REFLECT

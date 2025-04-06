@@ -32,10 +32,6 @@ STRUCT(Matrix,
     F(cols, int)
 );
 
-// Global variables
-VAR_(app_name, const char*, "Application name");
-VAR_(max_connections, int, "Maximum allowed connections");
-
 // Typedef examples
 ALIAS_(Byte, unsigned char, "Single byte type");
 
@@ -66,6 +62,5 @@ EXPORTS_(MyExports, "Example exports with full documentation support",
     UNIONS(&Number),
     FUNCS(&add_mixed),
     LAMBDAS(&Adder),
-    VARS(&app_name, &max_connections),
     TYPEDEFS(&Byte)
 );
