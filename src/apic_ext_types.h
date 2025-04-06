@@ -124,7 +124,7 @@ typedef struct Typedapic_Function {
     const char* doc;
 } Typedapic_Function;
 
-typedef struct Typedapic_Exports {
+typedef struct Typed_MySimpleLib {
     const char* name;
     const char* doc;
 
@@ -145,11 +145,11 @@ typedef struct Typedapic_Exports {
 
     Type** typedefs;
     size_t num_typedefs;
-} Typedapic_Exports;
+} Typed_MySimpleLib;
 
 
 void apic_ext_typecheck(apic_Exports* exports);
-void apic_ext_print_typed(Typedapic_Exports* tex);
+void apic_ext_print_typed(Typed_MySimpleLib* tex);
 
 /* Helper function declarations */
 static PrimitiveType get_primitive_type(const char* type_str);
@@ -157,7 +157,7 @@ static Type* create_type(const char* name, TypeKind kind);
 static Type* resolve_type(apic_Exports* exports, const char* type_str);
 static Type* resolve_typedef(apic_Exports* exports, const char* name);
 static Type* resolve_struct_type(apic_Exports* exports, const char* name);
-Typedapic_Exports* apic_ext_create_typed_exports(apic_Exports* exports);
+Typed_MySimpleLib* apic_ext_create_typed_exports(apic_Exports* exports);
 
 /* Implementation */
 static PrimitiveType get_primitive_type(const char* type_str) {
@@ -330,10 +330,10 @@ static Type* resolve_type(apic_Exports* exports, const char* type_str) {
     return t;
 }
 
-Typedapic_Exports* apic_ext_create_typed_exports(apic_Exports* exports) {
+Typed_MySimpleLib* apic_ext_create_typed_exports(apic_Exports* exports) {
     if (!exports) return NULL;
 
-    Typedapic_Exports* tex = calloc(1, sizeof(Typedapic_Exports));
+    Typed_MySimpleLib* tex = calloc(1, sizeof(Typed_MySimpleLib));
     if (!tex) return NULL;
 
     tex->name = exports->name;
@@ -550,7 +550,7 @@ static void print_enum(apic_EnumType* en, int indent) {
     printf("%s}\n\n", indent_str);
 }
 
-void apic_ext_print_typed(Typedapic_Exports* tex) {
+void apic_ext_print_typed(Typed_MySimpleLib* tex) {
     if (!tex) return;
 
     printf("\n========== Typed API: %s ==========\n", tex->name);

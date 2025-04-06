@@ -1,5 +1,5 @@
 #define APIC_REFLECT
-#include "basic_apic.h"
+#include "basic.apic.h"
 
 
 int main() {
@@ -12,7 +12,7 @@ int main() {
 
     printf("\n\n//----------------------------------------------------------\n\n");
     apic_ext_typecheck(&mysimplelib);
-    Typedapic_Exports* tex = apic_ext_create_typed_exports(&mysimplelib);
+    Typed_MySimpleLib* tex = apic_ext_create_typed_exports(&mysimplelib);
     apic_ext_print_typed(tex);
 
     // printf("\n\n----------------------------------------------------------\n");
