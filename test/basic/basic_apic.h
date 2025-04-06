@@ -33,7 +33,7 @@ STRUCT(Matrix,
     F(cols, int)
 );
 
-// Typedef examples
+// apic_Typedef examples
 ALIAS_(Byte, unsigned char, "Single byte type");
 
 FUNC_(add_mixed, "Adds int and float", int,
@@ -57,7 +57,7 @@ ENUM_(COLOR, "Basic colors",
     N_(BLUE, 2, "blue", "Primary color")
 );
 
-EXPORTS_(MyExports, "Example exports with full documentation support",
+EXPORTS_(mysimplelib, "Example exports with full documentation support",
     ENUMS(&COLOR),
     STRUCTS(&Vec2I, &Vec3I, &Calculator, &Node, &Buffer, &Matrix),
     UNIONS(&Number),

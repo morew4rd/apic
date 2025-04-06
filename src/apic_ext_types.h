@@ -10,9 +10,9 @@
     (strncmp(type_str, "struct ", 7) == 0) ? type_str + 7 : type_str
 
 /* Forward declarations */
-typedef struct StructType StructType;
-typedef struct UnionType UnionType;
-typedef struct EnumType EnumType;
+typedef struct apic_StructType apic_StructType;
+typedef struct apic_UnionType apic_UnionType;
+typedef struct apic_EnumType apic_EnumType;
 typedef struct Type Type;
 
 typedef enum PrimitiveType {
@@ -44,11 +44,11 @@ typedef struct PointerInfo {
     Type* base_type;
 } PointerInfo;
 
-typedef struct FunctionTypeInfo {
+typedef struct apic_FunctionTypeInfo {
     Type** param_types;
     size_t num_params;
     Type* return_type;
-} FunctionTypeInfo;
+} apic_FunctionTypeInfo;
 
 typedef enum TypeKind {
     TK_PRIMITIVE,
@@ -69,95 +69,95 @@ struct Type {
         PrimitiveType primitive;
         PointerInfo pointer;
         ArrayInfo array;
-        StructType* struct_type;
-        UnionType* union_type;
-        EnumType* enum_type;
-        FunctionTypeInfo function;
+        apic_StructType* struct_type;
+        apic_UnionType* union_type;
+        apic_EnumType* enum_type;
+        apic_FunctionTypeInfo function;
         Type* typedef_target;
     } data;
 };
 
-typedef struct TypedField {
+typedef struct Typedapic_Field {
     const char* name;
     Type* type;
     const char* doc;
-} TypedField;
+} Typedapic_Field;
 
-struct StructType {
+struct apic_StructType {
     const char* name;
-    TypedField* fields;
+    Typedapic_Field* fields;
     size_t num_fields;
     const char* doc;
 };
 
-struct UnionType {
+struct apic_UnionType {
     const char* name;
-    TypedField* fields;
+    Typedapic_Field* fields;
     size_t num_fields;
     const char* doc;
 };
 
-typedef struct TypedEnumEntry {
+typedef struct Typedapic_apic_EnumEntry {
     const char* name;
     int value;
     const char* doc;
-} TypedEnumEntry;
+} Typedapic_apic_EnumEntry;
 
-struct EnumType {
+struct apic_EnumType {
     const char* name;
-    TypedEnumEntry* entries;
+    Typedapic_apic_EnumEntry* entries;
     size_t num_entries;
     const char* doc;
 };
 
-typedef struct TypedVar {
+typedef struct Typedapic_Var {
     const char* name;
     Type* type;
     const char* doc;
-} TypedVar;
+} Typedapic_Var;
 
-typedef struct TypedFunction {
+typedef struct Typedapic_Function {
     const char* name;
     Type* return_type;
-    TypedField* params;
+    Typedapic_Field* params;
     size_t num_params;
     const char* doc;
-} TypedFunction;
+} Typedapic_Function;
 
-typedef struct TypedExports {
+typedef struct Typedapic_Exports {
     const char* name;
     const char* doc;
 
-    StructType** structs;
+    apic_StructType** structs;
     size_t num_structs;
 
-    UnionType** unions;
+    apic_UnionType** unions;
     size_t num_unions;
 
-    EnumType** enums;
+    apic_EnumType** enums;
     size_t num_enums;
 
-    TypedFunction** functions;
+    Typedapic_Function** functions;
     size_t num_functions;
 
-    TypedVar** variables;
+    Typedapic_Var** variables;
     size_t num_variables;
 
     Type** typedefs;
     size_t num_typedefs;
-} TypedExports;
+} Typedapic_Exports;
 
 
-void apic_ext_typecheck(Exports* exports);
-void apic_ext_print_typed(TypedExports* tex);
+void apic_ext_typecheck(apic_Exports* exports);
+void apic_ext_print_typed(Typedapic_Exports* tex);
 
 /* Helper function declarations */
 static PrimitiveType get_primitive_type(const char* type_str);
 static Type* create_type(const char* name, TypeKind kind);
-static Type* resolve_type(Exports* exports, const char* type_str);
-static Type* resolve_typedef(Exports* exports, const char* name);
-static Type* resolve_struct_type(Exports* exports, const char* name);
-TypedExports* apic_ext_create_typed_exports(Exports* exports);
+static Type* resolve_type(apic_Exports* exports, const char* type_str);
+static Type* resolve_typedef(apic_Exports* exports, const char* name);
+static Type* resolve_struct_type(apic_Exports* exports, const char* name);
+Typedapic_Exports* apic_ext_create_typed_exports(apic_Exports* exports);
 
 /* Implementation */
 static PrimitiveType get_primitive_type(const char* type_str) {
@@ -193,7 +193,7 @@ static Type* create_type(const char* name, TypeKind kind) {
     return t;
 }
 
-static Type* resolve_struct_type(Exports* exports, const char* name) {
+static Type* resolve_struct_type(apic_Exports* exports, const char* name) {
     /* Strip 'struct ' prefix if present */
     const char* stripped_name = STRIP_STRUCT_PREFIX(name);
 
@@ -201,7 +201,7 @@ static Type* resolve_struct_type(Exports* exports, const char* name) {
         if (strcmp(exports->structs[i]->name, stripped_name) == 0) {
             Type* t = create_type(stripped_name, TK_STRUCT);
             if (!t) return NULL;
-            t->data.struct_type = calloc(1, sizeof(StructType));
+            t->data.struct_type = calloc(1, sizeof(apic_StructType));
             if (!t->data.struct_type) {
                 free(t);
                 return NULL;
@@ -213,7 +213,7 @@ static Type* resolve_struct_type(Exports* exports, const char* name) {
     return NULL;
 }
 
-static Type* resolve_typedef(Exports* exports, const char* name) {
+static Type* resolve_typedef(apic_Exports* exports, const char* name) {
     /* Strip 'struct ' prefix for typedef resolution */
     const char* stripped_name = STRIP_STRUCT_PREFIX(name);
 
@@ -225,7 +225,7 @@ static Type* resolve_typedef(Exports* exports, const char* name) {
     return NULL;
 }
 
-static Type* resolve_type(Exports* exports, const char* type_str) {
+static Type* resolve_type(apic_Exports* exports, const char* type_str) {
     const char* orig_str = type_str;
     unsigned qualifiers = 0;
     Type* t = NULL;
@@ -330,10 +330,10 @@ static Type* resolve_type(Exports* exports, const char* type_str) {
     return t;
 }
 
-TypedExports* apic_ext_create_typed_exports(Exports* exports) {
+Typedapic_Exports* apic_ext_create_typed_exports(apic_Exports* exports) {
     if (!exports) return NULL;
 
-    TypedExports* tex = calloc(1, sizeof(TypedExports));
+    Typedapic_Exports* tex = calloc(1, sizeof(Typedapic_Exports));
     if (!tex) return NULL;
 
     tex->name = exports->name;
@@ -342,12 +342,12 @@ TypedExports* apic_ext_create_typed_exports(Exports* exports) {
     /* Convert structs */
     tex->num_structs = exports->struct_count;
     if (tex->num_structs > 0) {
-        tex->structs = calloc(tex->num_structs, sizeof(StructType*));
+        tex->structs = calloc(tex->num_structs, sizeof(apic_StructType*));
         if (!tex->structs) goto cleanup;
 
         for (int i = 0; i < exports->struct_count; i++) {
-            Struct* st = exports->structs[i];
-            StructType* stype = calloc(1, sizeof(StructType));
+            apic_Struct* st = exports->structs[i];
+            apic_StructType* stype = calloc(1, sizeof(apic_StructType));
             if (!stype) goto cleanup;
 
             stype->name = st->name;
@@ -355,14 +355,14 @@ TypedExports* apic_ext_create_typed_exports(Exports* exports) {
             stype->num_fields = st->count;
 
             if (st->count > 0) {
-                stype->fields = calloc(st->count, sizeof(TypedField));
+                stype->fields = calloc(st->count, sizeof(Typedapic_Field));
                 if (!stype->fields) {
                     free(stype);
                     goto cleanup;
                 }
 
                 for (int j = 0; j < st->count; j++) {
-                    Field f = st->fields[j];
+                    apic_Field f = st->fields[j];
                     stype->fields[j].name = f.name;
                     stype->fields[j].doc = f.doc;
                     stype->fields[j].type = resolve_type(exports, f.type);
@@ -379,7 +379,7 @@ TypedExports* apic_ext_create_typed_exports(Exports* exports) {
         if (!tex->typedefs) goto cleanup;
 
         for (int i = 0; i < exports->typedef_count; i++) {
-            Typedef* td = exports->typedefs[i];
+            apic_Typedef* td = exports->typedefs[i];
             Type* t = create_type(td->name, TK_TYPEDEF);
             if (!t) goto cleanup;
 
@@ -391,12 +391,12 @@ TypedExports* apic_ext_create_typed_exports(Exports* exports) {
     /* Convert functions */
     tex->num_functions = exports->func_count;
     if (tex->num_functions > 0) {
-        tex->functions = calloc(tex->num_functions, sizeof(TypedFunction*));
+        tex->functions = calloc(tex->num_functions, sizeof(Typedapic_Function*));
         if (!tex->functions) goto cleanup;
 
         for (int i = 0; i < exports->func_count; i++) {
-            Func* fn = exports->funcs[i];
-            TypedFunction* tfn = calloc(1, sizeof(TypedFunction));
+            apic_Func* fn = exports->funcs[i];
+            Typedapic_Function* tfn = calloc(1, sizeof(Typedapic_Function));
             if (!tfn) goto cleanup;
 
             tfn->name = fn->name;
@@ -405,14 +405,14 @@ TypedExports* apic_ext_create_typed_exports(Exports* exports) {
             tfn->num_params = fn->count;
 
             if (fn->count > 0) {
-                tfn->params = calloc(fn->count, sizeof(TypedField));
+                tfn->params = calloc(fn->count, sizeof(Typedapic_Field));
                 if (!tfn->params) {
                     free(tfn);
                     goto cleanup;
                 }
 
                 for (int j = 0; j < fn->count; j++) {
-                    Arg a = fn->args[j];
+                    apic_Arg a = fn->args[j];
                     tfn->params[j].name = a.name;
                     tfn->params[j].doc = a.doc;
                     tfn->params[j].type = resolve_type(exports, a.type);
@@ -479,17 +479,17 @@ static void type_to_str(Type* type, char* buf, size_t size, int indent) {
             break;
         }
         case TK_STRUCT: {
-            StructType* st = type->data.struct_type;
+            apic_StructType* st = type->data.struct_type;
             snprintf(buf + strlen(buf), size - strlen(buf), "struct %s", st->name);
             break;
         }
         case TK_UNION: {
-            UnionType* un = type->data.union_type;
+            apic_UnionType* un = type->data.union_type;
             snprintf(buf + strlen(buf), size - strlen(buf), "union %s", un->name);
             break;
         }
         case TK_ENUM: {
-            EnumType* en = type->data.enum_type;
+            apic_EnumType* en = type->data.enum_type;
             snprintf(buf + strlen(buf), size - strlen(buf), "enum %s", en->name);
             break;
         }
@@ -500,7 +500,7 @@ static void type_to_str(Type* type, char* buf, size_t size, int indent) {
             break;
         }
         case TK_FUNCTION: {
-            FunctionTypeInfo* fi = &type->data.function;
+            apic_FunctionTypeInfo* fi = &type->data.function;
             snprintf(buf + strlen(buf), size - strlen(buf), "(");
             for (size_t i = 0; i < fi->num_params; i++) {
                 char param[256];
@@ -516,7 +516,7 @@ static void type_to_str(Type* type, char* buf, size_t size, int indent) {
     }
 }
 
-static void print_struct(StructType* st, int indent) {
+static void print_struct(apic_StructType* st, int indent) {
     char indent_str[32] = {0};
     for (int i = 0; i < indent; i++) strcat(indent_str, "  ");
 
@@ -524,7 +524,7 @@ static void print_struct(StructType* st, int indent) {
     if (st->doc) printf("%s  // %s\n", indent_str, st->doc);
 
     for (size_t i = 0; i < st->num_fields; i++) {
-        TypedField* f = &st->fields[i];
+        Typedapic_Field* f = &st->fields[i];
         char type_buf[256];
         type_to_str(f->type, type_buf, sizeof(type_buf), indent + 1);
         printf("%s  %-20s %s", indent_str, type_buf, f->name);
@@ -534,7 +534,7 @@ static void print_struct(StructType* st, int indent) {
     printf("%s}\n\n", indent_str);
 }
 
-static void print_enum(EnumType* en, int indent) {
+static void print_enum(apic_EnumType* en, int indent) {
     char indent_str[32] = {0};
     for (int i = 0; i < indent; i++) strcat(indent_str, "  ");
 
@@ -542,7 +542,7 @@ static void print_enum(EnumType* en, int indent) {
     if (en->doc) printf("%s  // %s\n", indent_str, en->doc);
 
     for (size_t i = 0; i < en->num_entries; i++) {
-        TypedEnumEntry* e = &en->entries[i];
+        Typedapic_apic_EnumEntry* e = &en->entries[i];
         printf("%s  %s = %d", indent_str, e->name, e->value);
         if (e->doc) printf("  // %s", e->doc);
         printf("\n");
@@ -550,7 +550,7 @@ static void print_enum(EnumType* en, int indent) {
     printf("%s}\n\n", indent_str);
 }
 
-void apic_ext_print_typed(TypedExports* tex) {
+void apic_ext_print_typed(Typedapic_Exports* tex) {
     if (!tex) return;
 
     printf("\n========== Typed API: %s ==========\n", tex->name);
@@ -558,7 +558,7 @@ void apic_ext_print_typed(TypedExports* tex) {
 
     /* Print typedefs */
     if (tex->num_typedefs > 0) {
-        printf("\nTypedefs (%zu):\n", tex->num_typedefs);
+        printf("\napic_Typedefs (%zu):\n", tex->num_typedefs);
         for (size_t i = 0; i < tex->num_typedefs; i++) {
             Type* t = tex->typedefs[i];
             char type_buf[256];
@@ -569,7 +569,7 @@ void apic_ext_print_typed(TypedExports* tex) {
 
     /* Print structs */
     if (tex->num_structs > 0) {
-        printf("\nStructures (%zu):\n", tex->num_structs);
+        printf("\napic_Structures (%zu):\n", tex->num_structs);
         for (size_t i = 0; i < tex->num_structs; i++) {
             print_struct(tex->structs[i], 0);
         }
@@ -577,7 +577,7 @@ void apic_ext_print_typed(TypedExports* tex) {
 
     /* Print enums */
     if (tex->num_enums > 0) {
-        printf("\nEnums (%zu):\n", tex->num_enums);
+        printf("\napic_Enums (%zu):\n", tex->num_enums);
         for (size_t i = 0; i < tex->num_enums; i++) {
             print_enum(tex->enums[i], 0);
         }
@@ -585,9 +585,9 @@ void apic_ext_print_typed(TypedExports* tex) {
 
     /* Print functions */
     if (tex->num_functions > 0) {
-        printf("\nFunctions (%zu):\n", tex->num_functions);
+        printf("\napic_Functions (%zu):\n", tex->num_functions);
         for (size_t i = 0; i < tex->num_functions; i++) {
-            TypedFunction* fn = tex->functions[i];
+            Typedapic_Function* fn = tex->functions[i];
             char ret_buf[256];
             type_to_str(fn->return_type, ret_buf, sizeof(ret_buf), 0);
 
@@ -606,9 +606,9 @@ void apic_ext_print_typed(TypedExports* tex) {
 
     /* Print variables */
     if (tex->num_variables > 0) {
-        printf("\nVariables (%zu):\n", tex->num_variables);
+        printf("\napic_Variables (%zu):\n", tex->num_variables);
         for (size_t i = 0; i < tex->num_variables; i++) {
-            TypedVar* var = tex->variables[i];
+            Typedapic_Var* var = tex->variables[i];
             char type_buf[256];
             type_to_str(var->type, type_buf, sizeof(type_buf), 0);
             printf("  %-20s %s", type_buf, var->name);

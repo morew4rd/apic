@@ -22,7 +22,7 @@ static int is_string_type(const char *type) {
            strstr(type, "const char*");
 }
 
-static void apic_ext_gen_lua51_bindings(Exports *exports, FILE *out) {
+static void apic_ext_gen_lua51_bindings(apic_Exports *exports, FILE *out) {
     fprintf(out, "#include <lua.h>\n");
     fprintf(out, "#include <lauxlib.h>\n");
     fprintf(out, "#include <lualib.h>\n");
@@ -46,9 +46,9 @@ static void apic_ext_gen_lua51_bindings(Exports *exports, FILE *out) {
     fprintf(out, "           strstr(type, \"const char*\") != NULL;\n");
     fprintf(out, "}\n\n");
 
-    // Struct metatables and constructors
+    // apic_Struct metatables and constructors
     for (int i = 0; i < exports->struct_count; i++) {
-        Struct *st = exports->structs[i];
+        apic_Struct *st = exports->structs[i];
 
         // Constructor
         fprintf(out, "static int lua_%s_new(lua_State *L) {\n", st->name);
@@ -66,7 +66,7 @@ static void apic_ext_gen_lua51_bindings(Exports *exports, FILE *out) {
         fprintf(out, "    const char *field = luaL_checkstring(L, 2);\n");
 
         for (int j = 0; j < st->count; j++) {
-            Field f = st->fields[j];
+            apic_Field f = st->fields[j];
 
             if (strstr(f.type, "[")) {
                 fprintf(out, "    if (strcmp(field, \"%s\") == 0) {\n", f.name);
@@ -98,7 +98,7 @@ static void apic_ext_gen_lua51_bindings(Exports *exports, FILE *out) {
         fprintf(out, "    const char *field = luaL_checkstring(L, 2);\n");
 
         for (int j = 0; j < st->count; j++) {
-            Field f = st->fields[j];
+            apic_Field f = st->fields[j];
 
             if (strstr(f.type, "[")) continue;
 
@@ -119,9 +119,9 @@ static void apic_ext_gen_lua51_bindings(Exports *exports, FILE *out) {
         fprintf(out, "    return luaL_error(L, \"Invalid field: %%s\", field);\n}\n\n");
     }
 
-    // Function wrappers
+    // apic_Function wrappers
     for (int i = 0; i < exports->func_count; i++) {
-        Func *func = exports->funcs[i];
+        apic_Func *func = exports->funcs[i];
         fprintf(out, "static int lua_%s(lua_State *L) {\n", func->name);
 
         // Check argument count
@@ -131,7 +131,7 @@ static void apic_ext_gen_lua51_bindings(Exports *exports, FILE *out) {
 
         // Get arguments
         for (int j = 0; j < func->count; j++) {
-            Arg a = func->args[j];
+            apic_Arg a = func->args[j];
             if (is_integer_type(a.type)) {
                 fprintf(out, "    %s arg%d = luaL_checkinteger(L, %d);\n",
                         a.type, j+1, j+1);
@@ -178,13 +178,13 @@ static void apic_ext_gen_lua51_bindings(Exports *exports, FILE *out) {
         fprintf(out, "}\n\n");
     }
 
-    // Enum registration
+    // apic_Enum registration
     fprintf(out, "static void register_enums(lua_State *L) {\n");
     for (int i = 0; i < exports->enum_count; i++) {
-        Enum *en = exports->enums[i];
+        apic_Enum *en = exports->enums[i];
         fprintf(out, "    lua_newtable(L);\n");
         for (int j = 0; j < en->count; j++) {
-            EnumEntry e = en->entries[j];
+            apic_apic_EnumEntry e = en->entries[j];
             fprintf(out, "    lua_pushinteger(L, %d);\n", e.value);
             fprintf(out, "    lua_setfield(L, -2, \"%s\");\n", e.name);
         }
@@ -195,7 +195,7 @@ static void apic_ext_gen_lua51_bindings(Exports *exports, FILE *out) {
     // Global variables
     fprintf(out, "static void register_vars(lua_State *L) {\n");
     for (int i = 0; i < exports->var_count; i++) {
-        Var *v = exports->vars[i];
+        apic_Var *v = exports->vars[i];
         if (is_integer_type(v->type)) {
             fprintf(out, "    lua_pushinteger(L, %s);\n", v->name);
         } else if (is_float_type(v->type)) {
@@ -218,7 +218,7 @@ static void apic_ext_gen_lua51_bindings(Exports *exports, FILE *out) {
 
     // Register struct metatables
     for (int i = 0; i < exports->struct_count; i++) {
-        Struct *st = exports->structs[i];
+        apic_Struct *st = exports->structs[i];
         fprintf(out, "    luaL_newmetatable(L, \"%s\");\n", st->name);
         fprintf(out, "    lua_pushcfunction(L, lua_%s_index);\n", st->name);
         fprintf(out, "    lua_setfield(L, -2, \"__index\");\n");
@@ -233,7 +233,7 @@ static void apic_ext_gen_lua51_bindings(Exports *exports, FILE *out) {
 
     // Register functions
     for (int i = 0; i < exports->func_count; i++) {
-        Func *func = exports->funcs[i];
+        apic_Func *func = exports->funcs[i];
         fprintf(out, "    lua_pushcfunction(L, lua_%s);\n", func->name);
         fprintf(out, "    lua_setglobal(L, \"%s\");\n", func->name);
     }

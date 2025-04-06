@@ -50,44 +50,44 @@ static int is_primitive(const char* type) {
     return 0;
 }
 
-static int find_struct(Exports* exports, const char* name) {
+static int find_struct(apic_Exports* exports, const char* name) {
     for (int i = 0; i < exports->struct_count; i++) {
         if (strcmp(exports->structs[i]->name, name) == 0) return 1;
     }
     return 0;
 }
 
-static int find_union(Exports* exports, const char* name) {
+static int find_union(apic_Exports* exports, const char* name) {
     for (int i = 0; i < exports->union_count; i++) {
         if (strcmp(exports->unions[i]->name, name) == 0) return 1;
     }
     return 0;
 }
 
-static int find_enum(Exports* exports, const char* name) {
+static int find_enum(apic_Exports* exports, const char* name) {
     for (int i = 0; i < exports->enum_count; i++) {
         if (strcmp(exports->enums[i]->name, name) == 0) return 1;
     }
     return 0;
 }
 
-static int find_typedef(Exports* exports, const char* name) {
+static int find_typedef(apic_Exports* exports, const char* name) {
     for (int i = 0; i < exports->typedef_count; i++) {
         if (strcmp(exports->typedefs[i]->name, name) == 0) return 1;
     }
     return 0;
 }
 
-static int find_lambda(Exports* exports, const char* name) {
+static int find_lambda(apic_Exports* exports, const char* name) {
     for (int i = 0; i < exports->lambda_count; i++) {
         if (strcmp(exports->lambdas[i]->name, name) == 0) return 1;
     }
     return 0;
 }
 
-static int check_type(Exports* exports, TypeCheckContext* ctx, const char* type);
+static int check_type(apic_Exports* exports, TypeCheckContext* ctx, const char* type);
 
-static int check_pointer_type(Exports* exports, TypeCheckContext* ctx, const char* type) {
+static int check_pointer_type(apic_Exports* exports, TypeCheckContext* ctx, const char* type) {
     const char* ptr = strrchr(type, '*');
     if (!ptr) return 0;
 
@@ -103,7 +103,7 @@ static int check_pointer_type(Exports* exports, TypeCheckContext* ctx, const cha
     return check_type(exports, ctx, base);
 }
 
-static int check_array_type(Exports* exports, TypeCheckContext* ctx, const char* type) {
+static int check_array_type(apic_Exports* exports, TypeCheckContext* ctx, const char* type) {
     const char* bracket = strchr(type, '[');
     if (!bracket) return 0;
 
@@ -113,7 +113,7 @@ static int check_array_type(Exports* exports, TypeCheckContext* ctx, const char*
     return check_type(exports, ctx, base);
 }
 
-static int check_type(Exports* exports, TypeCheckContext* ctx, const char* type) {
+static int check_type(apic_Exports* exports, TypeCheckContext* ctx, const char* type) {
     // Handle pointers
     if (strchr(type, '*')) {
         return check_pointer_type(exports, ctx, type);
@@ -145,26 +145,26 @@ static int check_type(Exports* exports, TypeCheckContext* ctx, const char* type)
            find_lambda(exports, base);
 }
 
-static void check_field(Exports* exports, TypeCheckContext* ctx, const char* context, Field f) {
+static void check_field(apic_Exports* exports, TypeCheckContext* ctx, const char* context, apic_Field f) {
     if (!check_type(exports, ctx, f.type)) {
         report_error(ctx, "Invalid type '%s' for field '%s' in %s",
                     f.type, f.name, context);
     }
 }
 
-static void check_arg(Exports* exports, TypeCheckContext* ctx, const char* context, Arg a) {
+static void check_arg(apic_Exports* exports, TypeCheckContext* ctx, const char* context, apic_Arg a) {
     if (!check_type(exports, ctx, a.type)) {
         report_error(ctx, "Invalid type '%s' for argument '%s' in %s",
                     a.type, a.name, context);
     }
 }
 
-void apic_ext_typecheck(Exports* exports) {
+void apic_ext_typecheck(apic_Exports* exports) {
     TypeCheckContext ctx = {0};
 
     // Validate struct fields
     for (int i = 0; i < exports->struct_count; i++) {
-        Struct* st = exports->structs[i];
+        apic_Struct* st = exports->structs[i];
         char context[128];
         snprintf(context, sizeof(context), "struct %s", st->name);
         for (int j = 0; j < st->count; j++) {
@@ -174,7 +174,7 @@ void apic_ext_typecheck(Exports* exports) {
 
     // Validate union fields
     for (int i = 0; i < exports->union_count; i++) {
-        Union* u = exports->unions[i];
+        apic_Union* u = exports->unions[i];
         char context[128];
         snprintf(context, sizeof(context), "union %s", u->name);
         for (int j = 0; j < u->count; j++) {
@@ -184,7 +184,7 @@ void apic_ext_typecheck(Exports* exports) {
 
     // Validate functions
     for (int i = 0; i < exports->func_count; i++) {
-        Func* func = exports->funcs[i];
+        apic_Func* func = exports->funcs[i];
         if (!check_type(exports, &ctx, func->ret)) {
             report_error(&ctx, "Invalid return type '%s' for function %s",
                         func->ret, func->name);
@@ -198,7 +198,7 @@ void apic_ext_typecheck(Exports* exports) {
 
     // Validate lambdas
     for (int i = 0; i < exports->lambda_count; i++) {
-        Lambda* lam = exports->lambdas[i];
+        apic_Lambda* lam = exports->lambdas[i];
         if (!check_type(exports, &ctx, lam->ret)) {
             report_error(&ctx, "Invalid return type '%s' for lambda %s",
                         lam->ret, lam->name);
@@ -212,7 +212,7 @@ void apic_ext_typecheck(Exports* exports) {
 
     // Validate variables
     for (int i = 0; i < exports->var_count; i++) {
-        Var* v = exports->vars[i];
+        apic_Var* v = exports->vars[i];
         if (!check_type(exports, &ctx, v->type)) {
             report_error(&ctx, "Invalid type '%s' for variable %s",
                         v->type, v->name);
@@ -221,7 +221,7 @@ void apic_ext_typecheck(Exports* exports) {
 
     // Validate typedefs
     for (int i = 0; i < exports->typedef_count; i++) {
-        Typedef* t = exports->typedefs[i];
+        apic_Typedef* t = exports->typedefs[i];
         if (!check_type(exports, &ctx, t->type)) {
             report_error(&ctx, "Invalid underlying type '%s' for typedef %s",
                         t->type, t->name);

@@ -4,20 +4,20 @@
 
 int main() {
     printf("\n\n//----------------------------------------------------------\n\n");
-    apic_ext_gen_exported_c_header(&MyExports);
+    apic_ext_gen_exported_c_header(&mysimplelib);
 
     printf("\n/*");
     printf("\n\n//----------------------------------------------------------\n\n");
-    apic_ext_print_raw(&MyExports);
+    apic_ext_print_raw(&mysimplelib);
 
     printf("\n\n//----------------------------------------------------------\n\n");
-    apic_ext_typecheck(&MyExports);
-    TypedExports* tex = apic_ext_create_typed_exports(&MyExports);
+    apic_ext_typecheck(&mysimplelib);
+    Typedapic_Exports* tex = apic_ext_create_typed_exports(&mysimplelib);
     apic_ext_print_typed(tex);
 
     // printf("\n\n----------------------------------------------------------\n");
     printf("\n*/\n");
-    // apic_ext_gen_lua51_bindings(&MyExports, stdout);
+    // apic_ext_gen_lua51_bindings(&mysimplelib, stdout);
 
 
     printf("\n\n//----------------------------------------------------------\n\n");
