@@ -1,0 +1,20 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "hello world",
+            "type": "shell",
+            "command": "echo Hello"
+        },
+        {
+            "label": "make run-test",
+            "type": "shell",
+            "command": "m",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}

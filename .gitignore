@@ -1,7 +1,6 @@
-/.*
+.*
 /_*
-
-!.vscode
 !.gitignore
 
+!.vscode
 repomix*

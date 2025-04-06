@@ -2,16 +2,15 @@
     "version": "2.0.0",
     "configurations": [
          {
-            "name": "(lldb) Launch unit tests",
+            "name": "(lldb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            // "program": "${workspaceFolder}/_b/test_unit",
             "program": "${workspaceFolder}/_b/basic_reflect",
-            "args": [],
-            "stopAtEntry": true,
             "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
+            // "args": [],
+            // "environment": [],
+            // "stopAtEntry": true,
+            // "externalConsole": true,
             "MIMode": "lldb"
         },
     ]
