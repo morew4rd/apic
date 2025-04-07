@@ -23,3 +23,4 @@ run-test: clean-dir build-basic 	## rebuild and run tests
 	${BUILD_DIR}/basic_header
 	${BUILD_DIR}/basic_reflect > test/output/basic_reflect_output.c
 	cat test/output/basic_reflect_output.c
+	cat test/output/basic_lua_bindings.c

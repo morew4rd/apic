@@ -50,12 +50,18 @@ apic_Fields (2):
   i: int (Integer storage)
   f: float (Floating point storage)
 
-=== apic_Functions (1) ===
+=== apic_Functions (2) ===
 add_mixed: Adds int and float
 Returns: int
 apic_Args (2):
   a: int ()
   b: float ()
+
+my_fn: 
+Returns: Vec2I
+apic_Args (2):
+  x: int ()
+  y: int ()
 
 === apic_FuncPtrs (1) ===
 Adder: Adds int and float
@@ -164,4 +170,9 @@ typedef union Number {
 // Adds int and float
 int add_mixed(int a, float b);
 
+struct Vec2I my_fn(int x, int y);
+
 #endif // mysimplelib_PUBLIC_H
+
+// --- Generating Lua 5.1 Bindings to test/output/basic_lua_bindings.c ---
+// Lua Bindings generation done.

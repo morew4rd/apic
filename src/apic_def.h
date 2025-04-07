@@ -154,8 +154,8 @@ typedef struct apic_Union { const char *kind; const char *name, *doc; apic_Field
 typedef struct apic_Arg { const char *name, *type, *doc; } apic_Arg;
 typedef struct apic_Func { const char *kind; const char *name, *doc; const char *ret; apic_Arg *args; int count; } apic_Func;
 typedef struct apic_FuncPtr { const char *kind; const char *name, *doc; const char *ret; apic_Arg *args; int count; } apic_FuncPtr;
-typedef struct apic_apic_EnumEntry { const char *name; int value; const char *str, *doc; } apic_apic_EnumEntry;
-typedef struct apic_Enum { const char *name, *doc; apic_apic_EnumEntry *entries; int count; } apic_Enum;
+typedef struct apic_EnumEntry { const char *name; int value; const char *str, *doc; } apic_EnumEntry;
+typedef struct apic_Enum { const char *name, *doc; apic_EnumEntry *entries; int count; } apic_Enum;
 typedef struct apic_Exports {
     const char *name, *doc;
     apic_Struct **structs;
@@ -220,8 +220,8 @@ typedef struct apic_Exports {
 
 /* ------------------ apic_Enum Macros ------------------ */
 #define APIC_ENUM_(name, docstr, ...) \
-    static apic_apic_EnumEntry name##_entries[] = {__VA_ARGS__}; \
-    apic_Enum name = {#name, docstr, name##_entries, sizeof(name##_entries)/sizeof(apic_apic_EnumEntry)}
+    static apic_EnumEntry name##_entries[] = {__VA_ARGS__}; \
+    apic_Enum name = {#name, docstr, name##_entries, sizeof(name##_entries)/sizeof(apic_EnumEntry)}
 #define APIC_ENUM(name, ...) APIC_ENUM_(name, "", __VA_ARGS__)
 
 /* --------------- apic_Exports Macros --------------- */
@@ -295,7 +295,7 @@ static void apic_prettyprint(apic_Exports *exports) {
         apic_Enum *en = exports->enums[i];
         printf("%s: %s\nEntries (%d):\n", en->name, en->doc, en->count);
         for(int j = 0; j < en->count; j++) {
-            apic_apic_EnumEntry e = en->entries[j];
+            apic_EnumEntry e = en->entries[j];
             printf("  %s = %d (%s, %s)\n", e.name, e.value, e.str, e.doc);
         }
         if(i < exports->enum_count-1) printf("\n");

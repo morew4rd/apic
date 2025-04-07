@@ -30,18 +30,6 @@ static void report_resolution_error(TypeResolutionContext* ctx, const char* form
     }
 }
 
-// // Primitive Type List (Moved from typecheck.h)
-// static const char* primitive_types[] = {
-//     "void", "char", "unsigned char", "signed char",
-//     "short", "unsigned short", "int", "unsigned int",
-//     "long", "unsigned long", "long long", "unsigned long long",
-//     "float", "double", "size_t", // ssize_t is POSIX, maybe skip?
-//     "int8_t", "uint8_t", "int16_t", "uint16_t",
-//     "int32_t", "uint32_t", "int64_t", "uint64_t",
-//     "bool", "FILE", "intptr_t", "uintptr_t", // Added stdint ptr types
-//     NULL
-// };
-
 // Type Name Helpers (Moved and adapted from typecheck.h)
 static const char* strip_prefixes(const char* type) {
     const char* prefixes[] = {"const ", "volatile ", "restrict ", "struct ", "union ", "enum "};
@@ -110,29 +98,29 @@ static const char* strip_prefixes(const char* type) {
 //     return 0;
 // }
 
-static int find_struct(apic_Exports* exports, const char* name) {
-    const char* base_name = strip_prefixes(name);
-    for (int i = 0; i < exports->struct_count; i++) {
-        if (strcmp(exports->structs[i]->name, base_name) == 0) return 1;
-    }
-    return 0;
-}
+// static int find_struct(apic_Exports* exports, const char* name) {
+//     const char* base_name = strip_prefixes(name);
+//     for (int i = 0; i < exports->struct_count; i++) {
+//         if (strcmp(exports->structs[i]->name, base_name) == 0) return 1;
+//     }
+//     return 0;
+// }
 
-static int find_union(apic_Exports* exports, const char* name) {
-    const char* base_name = strip_prefixes(name);
-    for (int i = 0; i < exports->union_count; i++) {
-        if (strcmp(exports->unions[i]->name, base_name) == 0) return 1;
-    }
-    return 0;
-}
+// static int find_union(apic_Exports* exports, const char* name) {
+//     const char* base_name = strip_prefixes(name);
+//     for (int i = 0; i < exports->union_count; i++) {
+//         if (strcmp(exports->unions[i]->name, base_name) == 0) return 1;
+//     }
+//     return 0;
+// }
 
-static int find_enum(apic_Exports* exports, const char* name) {
-    const char* base_name = strip_prefixes(name);
-    for (int i = 0; i < exports->enum_count; i++) {
-        if (strcmp(exports->enums[i]->name, base_name) == 0) return 1;
-    }
-    return 0;
-}
+// static int find_enum(apic_Exports* exports, const char* name) {
+//     const char* base_name = strip_prefixes(name);
+//     for (int i = 0; i < exports->enum_count; i++) {
+//         if (strcmp(exports->enums[i]->name, base_name) == 0) return 1;
+//     }
+//     return 0;
+// }
 
 static apic_Alias* find_typedef_def(apic_Exports* exports, const char* name) {
     const char* base_name = strip_prefixes(name);
@@ -142,18 +130,18 @@ static apic_Alias* find_typedef_def(apic_Exports* exports, const char* name) {
     return NULL;
 }
 
-static int find_typedef(apic_Exports* exports, const char* name) {
-    return find_typedef_def(exports, name) != NULL;
-}
+// static int find_typedef(apic_Exports* exports, const char* name) {
+//     return find_typedef_def(exports, name) != NULL;
+// }
 
 
-static int find_funcptr(apic_Exports* exports, const char* name) {
-     const char* base_name = strip_prefixes(name);
-    for (int i = 0; i < exports->funcptr_count; i++) {
-        if (strcmp(exports->funcptrs[i]->name, base_name) == 0) return 1;
-    }
-    return 0;
-}
+// static int find_funcptr(apic_Exports* exports, const char* name) {
+//      const char* base_name = strip_prefixes(name);
+//     for (int i = 0; i < exports->funcptr_count; i++) {
+//         if (strcmp(exports->funcptrs[i]->name, base_name) == 0) return 1;
+//     }
+//     return 0;
+// }
 
 // End of moved functions from typecheck.h
 
@@ -1023,7 +1011,7 @@ apic_TypedExports* apicext_create_typed_exports(apic_Exports* exports) {
              etype->entries = calloc(e_def->count, sizeof(apic_TypedEnumEntry));
              if (!etype->entries) goto cleanup;
              for (int j = 0; j < e_def->count; j++) {
-                 apic_apic_EnumEntry entry_def = e_def->entries[j]; // Corrected type
+                 apic_EnumEntry entry_def = e_def->entries[j]; // Corrected type
                  etype->entries[j].name = entry_def.name;
                  etype->entries[j].value = entry_def.value;
                  etype->entries[j].str_value = entry_def.str;
@@ -1244,338 +1232,6 @@ static void cleanup_typed_exports(apic_TypedExports* tex) {
      // Free the main struct
      free(tex);
 }
-
-
-static const char* type_qualifier_str(unsigned qualifiers) {
-    static char buf[64]; // Static buffer, not thread-safe
-    buf[0] = '\0';
-
-    if (qualifiers & TQ_CONST) strcat(buf, "const ");
-    if (qualifiers & TQ_VOLATILE) strcat(buf, "volatile ");
-    if (qualifiers & TQ_RESTRICT) strcat(buf, "restrict ");
-
-    // Remove trailing space if any qualifiers were added
-    size_t len = strlen(buf);
-    if (len > 0 && buf[len - 1] == ' ') {
-        buf[len - 1] = '\0';
-    }
-    return buf;
-}
-
-
-// Improved type_to_str to handle pointers/arrays/qualifiers better
-static void type_to_str_recursive(Type* type, char* buf, size_t size) {
-     if (!type || !buf || size == 0) {
-         if (buf && size > 0) buf[0] = '\0';
-         return;
-     }
-
-     char current_part[256] = {0}; // Buffer for the current part of the type string
-
-     // 1. Handle base type name and fundamental kind
-     switch (type->kind) {
-         case TK_PRIMITIVE: {
-             const char* prim_names[] = { // Must match PrimitiveType enum order closely
-                 "void", "char", "unsigned char", "signed char", "short", "unsigned short",
-                 "int", "unsigned int", "long", "unsigned long", "long long",
-                 "unsigned long long", "float", "double", "bool", "size_t",
-                 "int8_t", "uint8_t", "int16_t", "uint16_t",
-                 "int32_t", "uint32_t", "int64_t", "uint64_t",
-                 "intptr_t", "uintptr_t", "FILE", "char*", /*PT_CSTRING placeholder*/
-                 "custom" /*PT_CUSTOM*/
-             };
-              // Correct handling for CSTRING based on context might be needed
-              // For now, use the name stored in the Type if available, else map enum
-              if (type->data.primitive < sizeof(prim_names)/sizeof(prim_names[0])) {
-                  snprintf(current_part, sizeof(current_part), "%s", prim_names[type->data.primitive]);
-              } else if (type->name){
-                   snprintf(current_part, sizeof(current_part), "%s", type->name); // Use stored name for custom
-              } else {
-                   snprintf(current_part, sizeof(current_part), "unknown_primitive");
-              }
-             break;
-         }
-         case TK_STRUCT:
-             snprintf(current_part, sizeof(current_part), "struct %s", type->data.struct_type ? type->data.struct_type->name : (type->name ? type->name : "unknown_struct"));
-             break;
-         case TK_UNION:
-              snprintf(current_part, sizeof(current_part), "union %s", type->data.union_type ? type->data.union_type->name : (type->name ? type->name : "unknown_union"));
-             break;
-         case TK_ENUM:
-              snprintf(current_part, sizeof(current_part), "enum %s", type->data.enum_type ? type->data.enum_type->name : (type->name ? type->name : "unknown_enum"));
-             break;
-         case TK_TYPEDEF:
-             // For a typedef, usually just print its name
-              snprintf(current_part, sizeof(current_part), "%s", type->name ? type->name : "unknown_typedef");
-             break;
-         case TK_FUNCPTR:
-              // For a funcptr typedef, print its name
-              snprintf(current_part, sizeof(current_part), "%s", type->data.function.name ? type->data.function.name : (type->name ? type->name : "unknown_funcptr"));
-             break;
-
-         // Recursive cases need special handling for string construction order
-         case TK_POINTER:
-         case TK_ARRAY:
-          case TK_FUNCTION: // Should function signatures be printable directly? Usually via funcptr.
-              // These are handled below after qualifiers
-              break;
-
-         case TK_UNRESOLVED:
-              snprintf(current_part, sizeof(current_part), "/*unresolved*/%s", type->name ? type->name : "??");
-              break;
-         default:
-             snprintf(current_part, sizeof(current_part), "unknown_kind(%d)", type->kind);
-     }
-
-     // 2. Add qualifiers (if any) before the base type name
-     const char* quals = type_qualifier_str(type->qualifiers);
-     if (quals[0] != '\0') {
-         char temp[256];
-         snprintf(temp, sizeof(temp), "%s %s", quals, current_part);
-         strncpy(current_part, temp, sizeof(current_part) - 1);
-         current_part[sizeof(current_part) - 1] = '\0';
-     }
-
-      // 3. Handle recursive construction for Pointer/Array
-      if (type->kind == TK_POINTER) {
-          char base_buf[256];
-          type_to_str_recursive(type->data.pointer.base_type, base_buf, sizeof(base_buf));
-          snprintf(buf, size, "%s*", base_buf);
-      } else if (type->kind == TK_ARRAY) {
-           char base_buf[256];
-           type_to_str_recursive(type->data.array.element_type, base_buf, sizeof(base_buf));
-           if (type->data.array.array_size > 0) {
-                snprintf(buf, size, "%s[%zu]", base_buf, type->data.array.array_size);
-           } else {
-                snprintf(buf, size, "%s[]", base_buf); // Unknown size
-           }
-       } else {
-           // For non-recursive types, copy the constructed part
-           strncpy(buf, current_part, size - 1);
-           buf[size - 1] = '\0';
-       }
-       // TODO: Function signature formatting if needed for TK_FUNCTION directly
-}
-
-// Wrapper to provide indentation (optional, maybe remove if complex)
-static void type_to_str(Type* type, char* buf, size_t size, int indent) {
-     // Indentation complicates recursive construction, remove for now
-     (void)indent; // Mark as unused
-     type_to_str_recursive(type, buf, size);
-}
-
-
-static void print_struct(apic_StructType* st, int indent) {
-    char indent_str[32] = {0};
-    for (int i = 0; i < indent; i++) strcat(indent_str, "  ");
-
-    printf("%sstruct %s {\n", indent_str, st->name);
-    if (st->doc && st->doc[0] != '\0') printf("%s  // %s\n", indent_str, st->doc);
-
-    for (size_t i = 0; i < st->num_fields; i++) {
-        apic_TypedField* f = &st->fields[i];
-        char type_buf[256];
-        type_to_str(f->type, type_buf, sizeof(type_buf), indent + 1);
-        // Adjust spacing: Type first, then name
-        printf("%s  %-20s %s;", indent_str, type_buf, f->name);
-        if (f->doc && f->doc[0] != '\0') printf(" // %s", f->doc);
-        printf("\n");
-    }
-    printf("%s};\n\n", indent_str);
-}
-
-static void print_union(apic_UnionType* un, int indent) {
-     char indent_str[32] = {0};
-     for (int i = 0; i < indent; i++) strcat(indent_str, "  ");
-
-     printf("%sunion %s {\n", indent_str, un->name);
-     if (un->doc && un->doc[0] != '\0') printf("%s  // %s\n", indent_str, un->doc);
-
-     for (size_t i = 0; i < un->num_fields; i++) {
-         apic_TypedField* f = &un->fields[i];
-         char type_buf[256];
-         type_to_str(f->type, type_buf, sizeof(type_buf), indent + 1);
-         printf("%s  %-20s %s;", indent_str, type_buf, f->name);
-         if (f->doc && f->doc[0] != '\0') printf(" // %s", f->doc);
-         printf("\n");
-     }
-     printf("%s};\n\n", indent_str);
-}
-
-
-static void print_enum(apic_EnumType* en, int indent) {
-    char indent_str[32] = {0};
-    for (int i = 0; i < indent; i++) strcat(indent_str, "  ");
-
-    printf("%senum %s {\n", indent_str, en->name);
-    if (en->doc && en->doc[0] != '\0') printf("%s  // %s\n", indent_str, en->doc);
-
-    for (size_t i = 0; i < en->num_entries; i++) {
-        apic_TypedEnumEntry* e = &en->entries[i];
-        printf("%s  %s = %d", indent_str, e->name, e->value);
-        if (i < en->num_entries - 1) printf(",");
-        // Combine string and doc if present
-         char comment[256] = {0};
-         if (e->str_value && e->str_value[0] != '\0') {
-              snprintf(comment, sizeof(comment), "%s", e->str_value);
-         }
-         if (e->doc && e->doc[0] != '\0') {
-              if (comment[0] != '\0') strncat(comment, ", ", sizeof(comment) - strlen(comment) - 1);
-              strncat(comment, e->doc, sizeof(comment) - strlen(comment) - 1);
-         }
-        if (comment[0] != '\0') printf(" // %s", comment);
-        printf("\n");
-    }
-    printf("%s};\n\n", indent_str);
-}
-
-static void print_funcptr(apic_TypedExports* tex, Type* fp_type, int indent) { // Added tex parameter
-    char indent_str[32] = {0};
-    for (int i = 0; i < indent; i++) strcat(indent_str, "  ");
-
-    if (!tex || !fp_type || (fp_type->kind != TK_FUNCPTR && fp_type->kind != TK_FUNCTION)) {
-         printf("%s// Invalid funcptr type or context\n", indent_str);
-         return;
-    }
-
-    apic_FunctionTypeInfo* fpi = &fp_type->data.function;
-    char ret_buf[256];
-    // Use the helper function with indentation 0 for components
-    type_to_str(fpi->return_type, ret_buf, sizeof(ret_buf), 0);
-
-    // Find the original definition doc string and param names from exports
-    const char* doc = NULL;
-    apic_Exports* exports = tex->context.current_exports; // Get exports from context
-    apic_FuncPtr* funcptr_def = NULL; // To store the original definition
-
-     if (fp_type->kind == TK_FUNCPTR && fpi->name && exports) {
-         for(int i=0; i < exports->funcptr_count; ++i) {
-              // Compare the name stored in the FunctionTypeInfo with the definitions
-              if(strcmp(exports->funcptrs[i]->name, fpi->name) == 0) {
-                   funcptr_def = exports->funcptrs[i]; // Found the definition
-                   doc = funcptr_def->doc;
-                   break;
-              }
-         }
-     }
-
-
-    printf("%stypedef %s (*%s)(", indent_str, ret_buf, fpi->name ? fpi->name : "anonymous_funcptr");
-
-    for (size_t j = 0; j < fpi->num_params; j++) {
-        char param_buf[256];
-        type_to_str(fpi->param_types[j], param_buf, sizeof(param_buf), 0);
-        printf("%s", param_buf);
-
-        // Print parameter name if we found the original definition
-        if (funcptr_def && j < funcptr_def->count) {
-            printf(" %s", funcptr_def->args[j].name);
-        }
-
-        if (j < fpi->num_params - 1) printf(", ");
-    }
-    // Handle void parameters (no arguments)
-     if (fpi->num_params == 0) {
-          printf("void");
-     }
-
-    printf(");");
-    if (doc && doc[0] != '\0') printf(" // %s", doc);
-    printf("\n");
-}
-
-// void apicext_print_typed(apic_TypedExports* tex) {
-//     if (!tex) return;
-//     // Store tex globally or pass it down for helper funcs like print_funcptr to access context
-//     // This is ugly, passing context is better. Let's add context to print funcs.
-//     // For now, use the existing global-like access via tex->context
-//     printf("/*\n");
-//     printf("\n Typed API: %s \n", tex->name);
-//     if (tex->doc && tex->doc[0] != '\0') printf("// %s\n", tex->doc);
-
-//     /* Print aliases */
-//     if (tex->num_aliases > 0) {
-//         printf("\nALIASES (%zu)\n", tex->num_aliases);
-//         for (size_t i = 0; i < tex->num_aliases; i++) {
-//             Type* t = tex->aliases[i];
-//             if (!t || t->kind != TK_TYPEDEF) continue; // Skip if not a valid typedef
-//             char target_buf[256];
-//             type_to_str(t->data.typedef_target, target_buf, sizeof(target_buf), 0);
-//              // Find original doc
-//             const char* doc = NULL;
-//             apic_Alias* alias_def = find_typedef_def(tex->context.current_exports, t->name);
-//             if(alias_def) doc = alias_def->doc;
-
-//             printf("%-20s %s;", target_buf, t->name);
-//             if (doc && doc[0] != '\0') printf(" -- %s", doc);
-//             printf("\n");
-
-//         }
-//          printf("\n");
-//     }
-
-//      /* Print Enums */
-//      if (tex->num_enums > 0) {
-//          printf("\nENUMS (%zu)\n", tex->num_enums);
-//          for (size_t i = 0; i < tex->num_enums; i++) {
-//              print_enum(tex->enums[i], 0);
-//          }
-//      }
-
-//      /* Print Function Pointers */
-//      if (tex->num_funcptrs > 0) {
-//         printf("\n/FUNCPTRS (%zu)\n", tex->num_funcptrs);
-//         for (size_t i = 0; i < tex->num_funcptrs; ++i) {
-//              // Original call: print_funcptr(tex->funcptrs[i], 0);
-//              print_funcptr(tex, tex->funcptrs[i], 0); // Pass tex as the first argument
-//         }
-//          printf("\n");
-//     }
-
-
-//     /* Print structs */
-//     if (tex->num_structs > 0) {
-//         printf("\nSTRUCTS(%zu)\n", tex->num_structs);
-//         for (size_t i = 0; i < tex->num_structs; i++) {
-//             print_struct(tex->structs[i], 0);
-//         }
-//     }
-
-//      /* Print Unions */
-//      if (tex->num_unions > 0) {
-//          printf("\nUNIONS(%zu)\n", tex->num_unions);
-//          for (size_t i = 0; i < tex->num_unions; i++) {
-//              print_union(tex->unions[i], 0);
-//          }
-//      }
-
-
-//     /* Print functions */
-//     if (tex->num_functions > 0) {
-//         printf("\nFUNCS(%zu)\n", tex->num_functions);
-//         for (size_t i = 0; i < tex->num_functions; i++) {
-//             apic_TypedFunction* fn = tex->functions[i];
-//             char ret_buf[256];
-//             type_to_str(fn->return_type, ret_buf, sizeof(ret_buf), 0);
-
-//             printf("%s %s(", ret_buf, fn->name);
-//             for (size_t j = 0; j < fn->num_params; j++) {
-//                 char param_buf[256];
-//                  // Use the TypedField structure for param info
-//                 type_to_str(fn->params[j].type, param_buf, sizeof(param_buf), 0);
-//                 printf("%s %s", param_buf, fn->params[j].name);
-//                 if (j < fn->num_params - 1) printf(", ");
-//             }
-//              if (fn->num_params == 0) printf("void"); // Explicit void for no params
-//             printf(");");
-//             if (fn->doc && fn->doc[0] != '\0') printf(" -- %s", fn->doc);
-//             printf("\n");
-//         }
-//     }
-
-
-//     printf("\n*\\n");
-// }
 
 
 #endif /* APIC_REFLECT */

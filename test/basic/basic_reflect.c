@@ -30,6 +30,13 @@ int main() {
 
     // OR: apicext_gen_exported_c_header_to_file(tex, "my_generated_header.h");
 
+    printf("\n// --- Generating Lua 5.1 Bindings to test/output/basic_lua_bindings.c ---\n");
+    // 3. Generate Lua Bindings
+    apicext_gen_lua51_bindings_to_file(tex, "mysimplelib", "basic_generated.h", "test/output/basic_lua_bindings.c");
+
+    printf("// Lua Bindings generation done.\n");
+
+
     // printf("\n\n//----------------------------------------------------------\n");
     // printf("\n/* --- Typed API Representation ---\n");
     // apicext_print_typed(tex); // Print the resolved typed structure

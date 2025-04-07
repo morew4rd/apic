@@ -45,6 +45,8 @@ FUNCPTR_(Adder, "Adds int and float", int,
     A(b, float)
 );
 
+FUNC(my_fn, Vec2I, A(x, int), A(y, int));
+
 STRUCT(Calculator,
     F(adder, Adder),
     F(value, float)
@@ -60,7 +62,7 @@ EXPORTS_(mysimplelib, "Example exports with full documentation support",
     ENUMS(&COLOR),
     STRUCTS(&Vec2I, &Vec3I, &Calculator, &Node, &Buffer, &Matrix),
     UNIONS(&Number),
-    FUNCS(&add_mixed),
+    FUNCS(&add_mixed, &my_fn),
     FUNCPTRS(&Adder),
     ALIASES(&Byte)
 );
