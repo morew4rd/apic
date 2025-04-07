@@ -1,6 +1,6 @@
 #ifdef APIC_REFLECT
 
-#include "apic.h"
+#include "apic_def.h"
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -159,7 +159,7 @@ static void check_arg(apic_Exports* exports, TypeCheckContext* ctx, const char* 
     }
 }
 
-void apic_ext_typecheck(apic_Exports* exports) {
+void apicext_typecheck(apic_Exports* exports) {
     TypeCheckContext ctx = {0};
 
     // Validate struct fields

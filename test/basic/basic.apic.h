@@ -1,5 +1,4 @@
-#define APIC_DEFINE_SHORTCUTS
-#include "../../src/apic.h"
+#include "../../src/apic_def.h"
 
 STRUCT(Vec2I,
     F_(x, int, "X coordinate"),

@@ -1,6 +1,6 @@
 #ifdef APIC_REFLECT
 
-#include "apic.h"
+#include "apic_def.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -126,7 +126,7 @@ static void __impl_ext_print_public_header(apic_Exports *exports, FILE *out) {
     fprintf(out, "#endif // %s_PUBLIC_H\n", exports->name);
 }
 
-static inline void apic_ext_gen_exported_c_header(apic_Exports *exports) {
+static inline void apicext_gen_exported_c_header(apic_Exports *exports) {
     __impl_ext_print_public_header(exports, stdout);
 }
 

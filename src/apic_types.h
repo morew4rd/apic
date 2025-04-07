@@ -1,6 +1,6 @@
 #ifdef APIC_REFLECT
 
-#include "apic.h"
+#include "apic_def.h"
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -148,8 +148,8 @@ typedef struct apic_TypedExports {
 } apic_TypedExports;
 
 
-void apic_ext_typecheck(apic_Exports* exports);
-void apic_ext_print_typed(apic_TypedExports* tex);
+void apicext_typecheck(apic_Exports* exports);
+void apicext_print_typed(apic_TypedExports* tex);
 
 /* Helper function declarations */
 static PrimitiveType get_primitive_type(const char* type_str);
@@ -157,7 +157,7 @@ static Type* create_type(const char* name, TypeKind kind);
 static Type* resolve_type(apic_Exports* exports, const char* type_str);
 static Type* resolve_typedef(apic_Exports* exports, const char* name);
 static Type* resolve_struct_type(apic_Exports* exports, const char* name);
-apic_TypedExports* apic_ext_create_typed_exports(apic_Exports* exports);
+apic_TypedExports* apicext_create_typed_exports(apic_Exports* exports);
 
 /* Implementation */
 static PrimitiveType get_primitive_type(const char* type_str) {
@@ -330,7 +330,7 @@ static Type* resolve_type(apic_Exports* exports, const char* type_str) {
     return t;
 }
 
-apic_TypedExports* apic_ext_create_typed_exports(apic_Exports* exports) {
+apic_TypedExports* apicext_create_typed_exports(apic_Exports* exports) {
     if (!exports) return NULL;
 
     apic_TypedExports* tex = calloc(1, sizeof(apic_TypedExports));
@@ -550,7 +550,7 @@ static void print_enum(apic_EnumType* en, int indent) {
     printf("%s}\n\n", indent_str);
 }
 
-void apic_ext_print_typed(apic_TypedExports* tex) {
+void apicext_print_typed(apic_TypedExports* tex) {
     if (!tex) return;
 
     printf("\n========== Typed API: %s ==========\n", tex->name);

@@ -1,6 +1,6 @@
 #ifdef APIC_REFLECT
 
-#include "apic.h"
+#include "apic_def.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -22,7 +22,7 @@ static int is_string_type(const char *type) {
            strstr(type, "const char*");
 }
 
-static void apic_ext_gen_lua51_bindings(apic_Exports *exports, FILE *out) {
+static void apicext_gen_lua51_bindings(apic_Exports *exports, FILE *out) {
     fprintf(out, "#include <lua.h>\n");
     fprintf(out, "#include <lauxlib.h>\n");
     fprintf(out, "#include <lualib.h>\n");
