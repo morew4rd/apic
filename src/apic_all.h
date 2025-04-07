@@ -8,7 +8,6 @@
 
 #include "apic_types.h"
 
-#include "apicext_typecheck.h"
 #include "apicext_gen_exported_c_header.h"
 #include "apicext_gen_lua51_bindings.h"
 

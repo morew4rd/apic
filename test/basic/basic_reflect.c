@@ -5,23 +5,38 @@
 
 
 int main() {
-    printf("\n\n//----------------------------------------------------------\n\n");
-    apicext_gen_exported_c_header(&mysimplelib);
-
-    printf("\n/*");
-    printf("\n\n//----------------------------------------------------------\n\n");
-    apic_prettyprint(&mysimplelib);
-
-    printf("\n\n//----------------------------------------------------------\n\n");
-    apicext_typecheck(&mysimplelib);
     apic_TypedExports* tex = apicext_create_typed_exports(&mysimplelib);
-    apicext_print_typed(tex);
+    if (!tex) {
+        fprintf(stderr, "Failed to create typed exports. Exiting.\n");
+        return 1;
+    }
+    if (tex->context.error_count > 0) {
+         fprintf(stderr, "Warning: Type resolution errors occurred.\n");
+         // Decide if you want to proceed with header generation despite errors
+    }
 
-    // printf("\n\n----------------------------------------------------------\n");
-    printf("\n*/\n");
-    // apicext_gen_lua51_bindings(&mysimplelib, stdout);
+
+    printf("\n\n//----------------------------------------------------------\n");
+    printf("\n/* --- Raw Reflection Data (Pretty Print) ---\n");
+    apic_prettyprint(&mysimplelib); // Can still print raw data if needed
+    printf("\n--- End Raw Reflection --- */\n");
 
 
-    printf("\n\n//----------------------------------------------------------\n\n");
+    printf("\n\n// --- Generating Public C Header ---\n");
+    printf("//----------------------------------------------------------\n\n");
+
+    // 2. Generate the Header using the Typed Exports
+    apicext_gen_exported_c_header(tex); // Prints to stdout
+
+    // OR: apicext_gen_exported_c_header_to_file(tex, "my_generated_header.h");
+
+    // printf("\n\n//----------------------------------------------------------\n");
+    // printf("\n/* --- Typed API Representation ---\n");
+    // apicext_print_typed(tex); // Print the resolved typed structure
+    // printf("\n--- End Typed API --- */\n");
+
+    // 3. Clean up Typed Exports
+    cleanup_typed_exports(tex);
+
     return 0;
 }
