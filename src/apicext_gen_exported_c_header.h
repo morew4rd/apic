@@ -15,7 +15,7 @@ static void __impl_ext_print_public_header(apic_Exports *exports, FILE *out) {
 
     // Print aliases first
     if (exports->typedef_count > 0) {
-        fprintf(out, "/* =============== apic_Aliass =============== */\n");
+        fprintf(out, "/* =============== apic_Aliases =============== */\n");
         for (int i = 0; i < exports->typedef_count; i++) {
             apic_Alias *t = exports->aliases[i];
             fprintf(out, "// %s\n", t->doc);

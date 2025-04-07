@@ -302,7 +302,7 @@ static void apic_prettyprint(apic_Exports *exports) {
     }
 
 
-    printf("\n=== apic_Aliass (%d) ===\n", exports->typedef_count);
+    printf("\n=== apic_Aliases (%d) ===\n", exports->typedef_count);
     for(int i = 0; i < exports->typedef_count; i++) {
         apic_Alias *t = exports->aliases[i];
         printf("%s = %s (%s)\n", t->name, t->type, t->doc);

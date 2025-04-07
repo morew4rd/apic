@@ -558,7 +558,7 @@ void apicext_print_typed(apic_TypedExports* tex) {
 
     /* Print aliases */
     if (tex->num_aliases > 0) {
-        printf("\napic_Aliass (%zu):\n", tex->num_aliases);
+        printf("\napic_Aliases (%zu):\n", tex->num_aliases);
         for (size_t i = 0; i < tex->num_aliases; i++) {
             Type* t = tex->aliases[i];
             char type_buf[256];

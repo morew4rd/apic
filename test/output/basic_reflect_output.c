@@ -12,7 +12,7 @@
 
 #include <stdint.h>
 
-/* =============== apic_Aliass =============== */
+/* =============== apic_Aliases =============== */
 // Single byte type
 typedef unsigned char Byte;
 
@@ -33,7 +33,7 @@ typedef struct Buffer Buffer;
 typedef struct Matrix Matrix;
 
 /* ============== apic_Structs ============== */
-// 
+//
 struct Vec2I {
     int x; // X coordinate
     int y; // Y coordinate
@@ -41,38 +41,38 @@ struct Vec2I {
 
 // 3D integer vector
 struct Vec3I {
-    int x; // 
-    int y; // 
-    int z; // 
+    int x; //
+    int y; //
+    int z; //
 };
 
-// 
+//
 struct Calculator {
-    Adder adder; // 
-    float value; // 
+    Adder adder; //
+    float value; //
 };
 
-// 
+//
 struct Node {
-    int value; // 
-    struct Node* next; // 
+    int value; //
+    struct Node* next; //
 };
 
-// 
+//
 struct Buffer {
-    char data[256]; // 
+    char data[256]; //
     int size; // Current buffer size
 };
 
-// 
+//
 struct Matrix {
-    float values[16]; // 
+    float values[16]; //
     int rows; // Matrix dimensions
-    int cols; // 
+    int cols; //
 };
 
 /* =============== apic_Unions =============== */
-// 
+//
 typedef union Number {
     int i; // Integer storage
     float f; // Floating point storage
@@ -100,7 +100,7 @@ apic_Exports: mysimplelib
 Description: Example exports with full documentation support
 
 === apic_Structs (6) ===
-Vec2I: 
+Vec2I:
 apic_Fields (2):
   x: int (X coordinate)
   y: int (Y coordinate)
@@ -111,29 +111,29 @@ apic_Fields (3):
   y: int ()
   z: int ()
 
-Calculator: 
+Calculator:
 apic_Fields (2):
   adder: Adder ()
   value: float ()
 
-Node: 
+Node:
 apic_Fields (2):
   value: int ()
   next: struct Node* ()
 
-Buffer: 
+Buffer:
 apic_Fields (2):
   data: char[256] ()
   size: int (Current buffer size)
 
-Matrix: 
+Matrix:
 apic_Fields (3):
   values: float[16] ()
   rows: int (Matrix dimensions)
   cols: int ()
 
 === apic_Unions (1) ===
-Number: 
+Number:
 apic_Fields (2):
   i: int (Integer storage)
   f: float (Floating point storage)
@@ -159,7 +159,7 @@ Entries (3):
   GREEN = 1 (green, Secondary color)
   BLUE = 2 (blue, Primary color)
 
-=== apic_Aliass (1) ===
+=== apic_Aliases (1) ===
 Byte = unsigned char (Single byte type)
 
 =============================================
@@ -173,46 +173,46 @@ All type checks passed successfully!
 ========== Typed API: mysimplelib ==========
 // Example exports with full documentation support
 
-apic_Aliass (1):
+apic_Aliases (1):
   typedef unsigned char        → Byte
 
 apic_Structures (6):
 struct Vec2I {
-  // 
+  //
   int                  x  // X coordinate
   int                  y  // Y coordinate
 }
 
 struct Vec3I {
   // 3D integer vector
-  int                  x  // 
-  int                  y  // 
-  int                  z  // 
+  int                  x  //
+  int                  y  //
+  int                  z  //
 }
 
 struct Calculator {
-  // 
-  char*                adder  // 
-  float                value  // 
+  //
+  char*                adder  //
+  float                value  //
 }
 
 struct Node {
-  // 
-  int                  value  // 
-  struct *             next  // 
+  //
+  int                  value  //
+  struct *             next  //
 }
 
 struct Buffer {
-  // 
-  char[256]            data  // 
+  //
+  char[256]            data  //
   int                  size  // Current buffer size
 }
 
 struct Matrix {
-  // 
-  float[16]            values  // 
+  //
+  float[16]            values  //
   int                  rows  // Matrix dimensions
-  int                  cols  // 
+  int                  cols  //
 }
 
 
