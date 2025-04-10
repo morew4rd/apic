@@ -63,24 +63,24 @@
 
 /* ------------------ apic_Struct Macros ----------------- */
 #define APIC_STRUCT_(name, docstr, ...) \
-    typedef struct name { _APIC_CONCAT_FIELDS(__VA_ARGS__) } name
+    typedef struct name { _APIC_CONCAT_FIELDS(__VA_ARGS__) } name;
 #define APIC_STRUCT(name, ...) APIC_STRUCT_(name, "", __VA_ARGS__)
 
 /* ------------------ apic_Union Macros ------------------ */
 #define APIC_UNION_(name, docstr, ...) \
-    typedef union name { _APIC_CONCAT_FIELDS(__VA_ARGS__) } name
+    typedef union name { _APIC_CONCAT_FIELDS(__VA_ARGS__) } name;
 #define APIC_UNION(name, ...) APIC_UNION_(name, "", __VA_ARGS__)
 
 /* ---------------- apic_Function Macros ---------------- */
-#define APIC_FUNC_(name, docstr, ret, ...) ret name(__VA_ARGS__)
+#define APIC_FUNC_(name, docstr, ret, ...) ret name(__VA_ARGS__);
 #define APIC_FUNC(name, ret, ...) APIC_FUNC_(name, "", ret, __VA_ARGS__)
 
 /* ----------------- apic_FuncPtr Macros ----------------- */
-#define APIC_FUNCPTR_(name, docstr, ret, ...) typedef ret (*name)(__VA_ARGS__)
+#define APIC_FUNCPTR_(name, docstr, ret, ...) typedef ret (*name)(__VA_ARGS__);
 #define APIC_FUNCPTR(name, ret, ...) APIC_FUNCPTR_(name, "", ret, __VA_ARGS__)
 
 /* ------------------ apic_Enum Macros ------------------ */
-#define APIC_ENUM_(name, docstr, ...) typedef enum name { __VA_ARGS__ } name
+#define APIC_ENUM_(name, docstr, ...) typedef enum name { __VA_ARGS__ } name;
 #define APIC_ENUM(name, ...) APIC_ENUM_(name, "", __VA_ARGS__)
 
 /* --------------- apic_Exports Macros --------------- */
@@ -180,7 +180,7 @@ typedef struct apic_Exports {
 #define APIC_FIELD_ARRAY(n,t,c) APIC_FIELD_ARRAY_(n,t,c, "")
 
 /* ---------------- apic_Alias Macros ---------------- */
-#define APIC_ALIAS_(n,t,d) static apic_Alias n = {"typedef", #n, #t, d}
+#define APIC_ALIAS_(n,t,d) static apic_Alias n = {"typedef", #n, #t, d};
 #define APIC_ALIAS(n,t) APIC_ALIAS_(n,t, "")
 
 /* ---------------- apic_Argument Macros --------------- */
@@ -197,31 +197,31 @@ typedef struct apic_Exports {
 /* ------------------ apic_Struct Macros ----------------- */
 #define APIC_STRUCT_(name, docstr, ...) \
     static apic_Field name##_fields[] = {__VA_ARGS__}; \
-    apic_Struct name = {"struct", #name, docstr, name##_fields, sizeof(name##_fields)/sizeof(apic_Field)}
+    apic_Struct name = {"struct", #name, docstr, name##_fields, sizeof(name##_fields)/sizeof(apic_Field)};
 #define APIC_STRUCT(name, ...) APIC_STRUCT_(name, "", __VA_ARGS__)
 
 /* ------------------ apic_Union Macros ------------------ */
 #define APIC_UNION_(name, docstr, ...) \
     static apic_Field name##_fields[] = {__VA_ARGS__}; \
-    apic_Union name = {"union", #name, docstr, name##_fields, sizeof(name##_fields)/sizeof(apic_Field)}
+    apic_Union name = {"union", #name, docstr, name##_fields, sizeof(name##_fields)/sizeof(apic_Field)};
 #define APIC_UNION(name, ...) APIC_UNION_(name, "", __VA_ARGS__)
 
 /* ---------------- apic_Function Macros ---------------- */
 #define APIC_FUNC_(name, docstr, ret, ...) \
     static apic_Arg name##_args[] = {__VA_ARGS__}; \
-    apic_Func name = {"function", #name, docstr, #ret, name##_args, sizeof(name##_args)/sizeof(apic_Arg)}
+    apic_Func name = {"function", #name, docstr, #ret, name##_args, sizeof(name##_args)/sizeof(apic_Arg)};
 #define APIC_FUNC(name, ret, ...) APIC_FUNC_(name, "", ret, __VA_ARGS__)
 
 /* ----------------- apic_FuncPtr Macros ----------------- */
 #define APIC_FUNCPTR_(name, docstr, ret, ...) \
     static apic_Arg name##_args[] = {__VA_ARGS__}; \
-    apic_FuncPtr name = {"funcptr", #name, docstr, #ret, name##_args, sizeof(name##_args)/sizeof(apic_Arg)}
+    apic_FuncPtr name = {"funcptr", #name, docstr, #ret, name##_args, sizeof(name##_args)/sizeof(apic_Arg)};
 #define APIC_FUNCPTR(name, ret, ...) APIC_FUNCPTR_(name, "", ret, __VA_ARGS__)
 
 /* ------------------ apic_Enum Macros ------------------ */
 #define APIC_ENUM_(name, docstr, ...) \
     static apic_EnumEntry name##_entries[] = {__VA_ARGS__}; \
-    apic_Enum name = {#name, docstr, name##_entries, sizeof(name##_entries)/sizeof(apic_EnumEntry)}
+    apic_Enum name = {#name, docstr, name##_entries, sizeof(name##_entries)/sizeof(apic_EnumEntry)};
 #define APIC_ENUM(name, ...) APIC_ENUM_(name, "", __VA_ARGS__)
 
 /* --------------- apic_Exports Macros --------------- */
@@ -232,7 +232,7 @@ typedef struct apic_Exports {
 #define APIC_ENUMS(...) .enums = (apic_Enum*[]){__VA_ARGS__}, .enum_count = sizeof((apic_Enum*[]){__VA_ARGS__})/sizeof(apic_Enum*)
 #define APIC_ALIASES(...) .aliases = (apic_Alias*[]){__VA_ARGS__}, .typedef_count = sizeof((apic_Alias*[]){__VA_ARGS__})/sizeof(apic_Alias*)
 
-#define APIC_PUBLIC_EXPORTS_(n, d, ...) apic_Exports n = {.name = #n, .doc = d, __VA_ARGS__}
+#define APIC_PUBLIC_EXPORTS_(n, d, ...) apic_Exports n = {.name = #n, .doc = d, __VA_ARGS__};
 #define APIC_PUBLIC_EXPORTS(n, ...) APIC_PUBLIC_EXPORTS_(n, "", __VA_ARGS__)
 
 

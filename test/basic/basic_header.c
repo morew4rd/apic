@@ -7,7 +7,6 @@ int add_impl(int a, float b) { return a + (int)b; }
 int main() {
     Vec2I v2 = {10, 20};
     printf("Vec2I: %d, %d\n", v2.x, v2.y);
-
     // Using typedef
     Byte byte = 255;
     printf("Byte value: %u\n", byte);

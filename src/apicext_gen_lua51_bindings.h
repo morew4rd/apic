@@ -239,7 +239,12 @@ static int generate_lua_push_code(FILE* out, Type* type, const char* var_name, c
                   char meta_name[256];
                   char base_type_str[256];
                   type_to_str_recursive(base, base_type_str, sizeof(base_type_str));
-                  get_lua_handle_metatable_name(base, module_name, meta_name, sizeof(meta_name));
+                  // Handle opaque structs by using their typedef name
+                  if (base->is_forward_decl && base->name) {
+                      snprintf(meta_name, sizeof(meta_name), "%s%s.%s", LUA_METATABLE_PREFIX, module_name, base->name);
+                  } else {
+                      get_lua_handle_metatable_name(base, module_name, meta_name, sizeof(meta_name));
+                  }
                    if (meta_name[0] == '\0') {
                         fprintf(out, "    /* Error: Cannot find meta for %s* */ lua_pushnil(L);\n", base_type_str); return 1;
                    }
@@ -346,7 +351,8 @@ static void generate_struct_union_metatable(FILE* out, Type* type, const char* m
     fprintf(out, "        return 1; // Return method\n");
     fprintf(out, "    } else {\n");
     // Escaped %s
-    fprintf(out, "        return luaL_error(L, \"No such field or method '%%s' in %s %%s handle\", key, \"%s\", \"%s\");\n", type_kind_str, type_name);
+    // mg: %s adjustment
+    fprintf(out, "        return luaL_error(L, \"No such field or method '%%s' in %s %%s handle\", key, \"%s\", \"%s\");\n", type_name, type_kind_str, type_name);
     fprintf(out, "    }\n");
     fprintf(out, "}\n\n");
 
@@ -380,7 +386,8 @@ static void generate_struct_union_metatable(FILE* out, Type* type, const char* m
      }
 
     // Escaped %s
-    fprintf(out, "\n    return luaL_error(L, \"No such field '%%s' in %s %%s handle to assign to\", key, \"%s\", \"%s\");\n", type_kind_str, type_name);
+    // mg: %s adjustment
+    fprintf(out, "\n    return luaL_error(L, \"No such field '%%s' in %s %%s handle to assign to\", key, \"%s\", \"%s\");\n", type_name, type_kind_str, type_name);
     fprintf(out, "}\n\n");
 
     // --- __tostring metamethod ---

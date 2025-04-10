@@ -1,11 +1,19 @@
 #define APIC_REFLECT
 #define APIC_REFLECT_PRETTYPRINT
 #include "apic_all.h"
-#include "basic.apic.h"
+#include "kyte.apic.h"
 
 
+/**
+ * @brief The main function serves as the entry point for the kyte_reflect application.
+ *
+ * This function initializes the application and executes the necessary operations
+ * to perform reflection on the kyte system.
+ *
+ * @return int Returns 0 on successful execution, non-zero on failure.
+ */
 int main() {
-    apic_TypedExports* tex = apicext_create_typed_exports(&mysimplelib);
+    apic_TypedExports* tex = apicext_create_typed_exports(&kyte_api);
     if (!tex) {
         fprintf(stderr, "Failed to create typed exports. Exiting.\n");
         return 1;
@@ -18,7 +26,7 @@ int main() {
 
     printf("\n\n//----------------------------------------------------------\n");
     printf("\n/* --- Raw Reflection Data (Pretty Print) ---\n");
-    apic_prettyprint(&mysimplelib); // Can still print raw data if needed
+    apic_prettyprint(&kyte_api); // Can still print raw data if needed
     printf("\n--- End Raw Reflection --- */\n");
 
 
@@ -32,7 +40,7 @@ int main() {
 
     printf("\n// --- Generating Lua 5.1 Bindings to test/output/basic_lua_bindings.c ---\n");
     // 3. Generate Lua Bindings
-    apicext_gen_lua51_bindings_to_file(tex, "mysimplelib", "basic_generated.h", "test/output/basic_lua_bindings.c");
+    apicext_gen_lua51_bindings_to_file(tex, "kytehehe", "kyte_generated.h", "test/output/kyte_lua_bindings.c");
 
     printf("// Lua Bindings generation done.\n");
 

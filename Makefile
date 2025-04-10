@@ -1,4 +1,5 @@
--default: run-test
+# TODO lua api
+-default: run-all
 
 ##########
 show-help: ## show help
@@ -9,18 +10,35 @@ show-help: ## show help
 ##########
 
 
-BUILD_DIR = _b
+BUILD_DIR = build
 
-clean-dir: ## clean test build
+cmake-config: ## cmake config (cleans previous build & test output)
 	rm -rf ${BUILD_DIR}
-	mkdir -p ${BUILD_DIR}
+	cmake -S . -B ${BUILD_DIR}
+cmake-build: ## cmake build
+	cmake --build ${BUILD_DIR}
 
-build-basic: ## build tests
-	cc -g -o ${BUILD_DIR}/basic_reflect test/basic/basic_reflect.c
-	cc -g -o ${BUILD_DIR}/basic_header  test/basic/basic_header.c
+# clean-test-output: ## cleans test output
+# 	rm -rf test/output/**
 
-run-test: clean-dir build-basic 	## rebuild and run tests
+# clean-all: clean-test-output ## clean test build
+# 	rm -rf ${BUILD_DIR}
+# 	mkdir -p ${BUILD_DIR}
+
+# build-basic: ## build tests
+# 	cc -MJ ./build/compile_commands.json -g -o ${BUILD_DIR}/basic_reflect -I src test/basic/basic_reflect.c
+# 	cc -MJ ./build/compile_commands.json -g -o ${BUILD_DIR}/basic_header  -I src test/basic/basic_header.c
+# 	cc -MJ ./build/compile_commands.json -g -o ${BUILD_DIR}/kyte_reflect -I src test/kyte/kyte_reflect.c
+# run-kyte:  ## kyte
+# 	${BUILD_DIR}/kyte_reflect > test/output/kyte_reflect_output.c
+
+
+run-all: cmake-config cmake-build	## rebuild and run tests
+
+	mkdir ${BUILD_DIR}/test_out
+	${BUILD_DIR}/basic_reflect > ${BUILD_DIR}/test_out/basic_reflect.c
+	cat ${BUILD_DIR}/test_out/basic_reflect.c
+
 	${BUILD_DIR}/basic_header
-	${BUILD_DIR}/basic_reflect > test/output/basic_reflect_output.c
-	cat test/output/basic_reflect_output.c
-	cat test/output/basic_lua_bindings.c
+
+

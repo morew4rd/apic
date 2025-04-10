@@ -35,6 +35,7 @@ static void type_to_str_recursive(Type* type, char* buf, size_t size) {
      }
 
      char current_part[256] = {0}; // Buffer for the current part of the type string
+     const char* struct_name = NULL;
 
      // 1. Handle base type name and fundamental kind
      switch (type->kind) {
@@ -60,7 +61,13 @@ static void type_to_str_recursive(Type* type, char* buf, size_t size) {
              break;
          }
          case TK_STRUCT:
-             snprintf(current_part, sizeof(current_part), "struct %s", type->data.struct_type ? type->data.struct_type->name : (type->name ? type->name : "unknown_struct"));
+             // Handle struct type - don't add "struct" prefix if name already starts with it
+             struct_name = type->data.struct_type ? type->data.struct_type->name : (type->name ? type->name : "unknown_struct");
+             if (strncmp(struct_name, "struct ", 7) == 0) {
+                 snprintf(current_part, sizeof(current_part), "%s", struct_name);
+             } else {
+                 snprintf(current_part, sizeof(current_part), "struct %s", struct_name);
+             }
              break;
          case TK_UNION:
               snprintf(current_part, sizeof(current_part), "union %s", type->data.union_type ? type->data.union_type->name : (type->name ? type->name : "unknown_union"));

@@ -170,7 +170,7 @@ typedef enum PrimitiveType {
     PT_LONG, PT_ULONG,
     PT_LONGLONG, PT_ULONGLONG,
     PT_FLOAT, PT_DOUBLE,
-    PT_BOOL, PT_SIZE_T, // ssize_t ?
+    PT_BOOL, PT_SIZE_T, PT_USIZE_T,
     PT_INT8, PT_UINT8, PT_INT16, PT_UINT16, PT_INT32, PT_UINT32, PT_INT64, PT_UINT64,
     PT_INTPTR, PT_UINTPTR,
     PT_FILE, // Added FILE* ? Needs thought. Let's keep FILE for now.
@@ -378,7 +378,8 @@ static PrimitiveType get_primitive_type_enum(const char* type_str) {
         {"long long", PT_LONGLONG}, {"unsigned long long", PT_ULONGLONG},
         {"float", PT_FLOAT}, {"double", PT_DOUBLE},
         {"bool", PT_BOOL}, {"_Bool", PT_BOOL}, // Allow _Bool
-        {"size_t", PT_SIZE_T},
+        {"size_t", PT_USIZE_T},
+        {"ptrdiff_t", PT_SIZE_T},
         {"int8_t", PT_INT8}, {"uint8_t", PT_UINT8},
         {"int16_t", PT_INT16}, {"uint16_t", PT_UINT16},
         {"int32_t", PT_INT32}, {"uint32_t", PT_UINT32},
@@ -437,10 +438,18 @@ static Type* resolve_type_recursive(apic_TypedExports* tex, apic_Exports* export
     Type* cached_type = find_in_cache(&tex->type_cache, type_str);
     if (cached_type) {
         // Check for unresolved forward decl cycles
-         if (cached_type->kind == TK_UNRESOLVED) {
-             report_resolution_error(&tex->context, "Circular dependency detected for type '%s'", type_str);
-             return NULL; // Return NULL on cycle detection
-         }
+        if (cached_type->kind == TK_UNRESOLVED) {
+            // Special case for opaque struct aliases (e.g. "struct KyteBlob")
+            if (strncmp(type_str, "struct ", 7) == 0) {
+                // Treat as forward declaration
+                cached_type->kind = TK_STRUCT;
+                cached_type->is_forward_decl = 1;
+                cached_type->data.struct_type = NULL;
+                return cached_type;
+            }
+            report_resolution_error(&tex->context, "Circular dependency detected for type '%s'", type_str);
+            return NULL; // Return NULL on cycle detection
+        }
         return cached_type;
     }
 
@@ -448,6 +457,23 @@ static Type* resolve_type_recursive(apic_TypedExports* tex, apic_Exports* export
     Type* placeholder = create_type(type_str, TK_UNRESOLVED);
     if (!placeholder) return NULL; // Allocation failed
     add_to_cache(&tex->type_cache, type_str, placeholder);
+
+    // Special early handling for opaque struct aliases and forward declarations
+    if (strncmp(type_str, "struct ", 7) == 0) {
+        placeholder->kind = TK_STRUCT;
+        placeholder->is_forward_decl = 1;
+        placeholder->data.struct_type = NULL;
+        return placeholder;
+    }
+
+    // Handle typedef aliases to forward-declared structs
+    apic_Alias* alias_def = find_typedef_def(exports, type_str);
+    if (alias_def && alias_def->type && strncmp(alias_def->type, "struct ", 7) == 0) {
+        placeholder->kind = TK_TYPEDEF;
+        placeholder->is_forward_decl = 1;
+        placeholder->data.typedef_target = resolve_type_recursive(tex, exports, alias_def->type);
+        return placeholder;
+    }
 
 
     const char* original_str = type_str; // Keep original for potential naming/caching
@@ -585,10 +611,10 @@ static Type* resolve_type_recursive(apic_TypedExports* tex, apic_Exports* export
 
     // 4b. Check Typedefs (Aliases) - Must happen before Struct/Union/Enum check
     // because a typedef might shadow a struct name.
-    apic_Alias* alias_def = find_typedef_def(exports, lookup_name);
-    if (alias_def) {
+    apic_Alias* typedef_def = find_typedef_def(exports, lookup_name);
+    if (typedef_def) {
         // Resolve the target type recursively
-        Type* target_type = resolve_type_recursive(tex, exports, alias_def->type);
+        Type* target_type = resolve_type_recursive(tex, exports, typedef_def->type);
         if (target_type) {
             resolved_type = create_type(original_str, TK_TYPEDEF); // Name is the alias name
              if (!resolved_type) goto resolve_fail;
