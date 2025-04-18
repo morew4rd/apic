@@ -172,6 +172,29 @@ typedef struct apic_Exports {
     int typedef_count;
 } apic_Exports;
 
+typedef enum apic_ExportKind {
+    APIC_EXPORT_ALIAS,
+    APIC_EXPORT_STRUCT,
+    APIC_EXPORT_UNION,
+    APIC_EXPORT_ENUM,
+    APIC_EXPORT_FUNC,
+    APIC_EXPORT_FUNCPTR,
+} apic_ExportKind;
+
+typedef union apic_ExportValue {
+    apic_Alias _alias;
+    apic_Struct _struct;
+    apic_Union _union;
+    apic_Enum _enum;
+    apic_Func _func;
+    apic_FuncPtr _funcptr;
+} apic_ExportValue;
+
+typedef struct apic_Export {
+    apic_ExportKind kind;
+    apic_ExportValue value;
+} apic_Export;
+
 
 /* ----------------- apic_Field Macros ----------------- */
 #define APIC_FIELD_(n,t,d) {#n, #t, d}
