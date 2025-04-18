@@ -195,6 +195,13 @@ typedef struct apic_Export {
     apic_ExportValue value;
 } apic_Export;
 
+// TBD
+typedef struct apic_ExportsNEW {
+    apic_Export *exports;
+    int count;
+
+} apic_ExportsNEW;
+
 
 /* ----------------- apic_Field Macros ----------------- */
 #define APIC_FIELD_(n,t,d) {#n, #t, d}

@@ -32,7 +32,8 @@ int main() {
 
     printf("\n// --- Generating Lua 5.1 Bindings to test/output/basic_lua_bindings.c ---\n");
     // 3. Generate Lua Bindings
-    apicext_gen_lua51_bindings_to_file(tex, "mysimplelib", "basic_generated.h", "test/output/basic_lua_bindings.c");
+    // apicext_gen_lua51_bindings_to_file(tex, "mysimplelib", "basic_generated.h", "test/output/basic_lua_bindings.c");
+    apicext_gen_lua51_bindings(tex, "mysimplelib", "basic_generated.h");
 
     printf("// Lua Bindings generation done.\n");
 

@@ -1,19 +1,46 @@
 # APIC
 
-**THIS IS WIP. DON'T USE YET **
+**THIS IS WIP. DON'T USE IT YET **
 
 ## Overview
 
-API definition DSL in C.
+Define your public APIs with the provided simple macros and use the file like a normal header file. But you also get reflection data for the types and the function signatures to be used by tools.
 
-Use a basicly defined API structure. By default it can be used
-as a replacement for a header file.
+```c
+#include "apic.h"
 
-It can also be used for compile time reflection for types defined with this DSL.
+/*
+A(x, I32);     // arg: functions
+E(bla);        // entry: enums
+F(x, I32);     // field: structs, unions, variants,
+FA(x, I32, $n) // field (static array)  // array only allowed in fields. elsewhere use PTR or SLC
 
-## Example
 
-See `./test` directory.
+// ptr (*)
+PTR(I32)
+// slice: ptr + count
+SLC(I32)
+*/
+
+// function
+FUNC(new_board, PTR(Board), A(w, I32), A(h, I32));
+// function
+FUNCPTR(BoardMakerFn, PTR(Board), A(w, I32), A(h, I32));
+// enum
+ENUM(MY_COLOR, E(red), E(green), E(blue));
+// struct
+STRUCT(Board, F(w, I32), F(h, I32), F(data, PTR(Byte)));
+// union
+UNION(Result, F(board, Board), F(failure_code, I32));
+// variant: enum + union
+VARIANT(Result2, F(board, Board), F(failure_code, I32));
+// alias
+ALIAS(MyRes, Result);
+
+// export multiple names for reflections
+EXPORTS(new_board, BoardMakerFn, MY_COLOR, Board, Result, Result2, MyRes);
+
+```
 
 ## Benefits
 
@@ -35,3 +62,8 @@ See `./test` directory.
    - Debugging tools
 
 APIC provides powerful meta-programming capabilities while maintaining standard C compatibility.
+
+
+## Example
+
+See `./test` directory.
